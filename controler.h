@@ -18,7 +18,7 @@ class Workbench {
     std::pair<double,double> pos; // 位置
     int left_time; //剩余生产时间
     int input_box;
-    bool output_box;
+    int output_box;
 
     int occupy_by = -1; //占用的机器名称
     Workbench(int _type):type(_type) {};
@@ -44,7 +44,7 @@ vector<double> get_split_line_text(bool is_debug=false);
 // 删除一行
 void delete_line(int n=1);
 // 获取一帧的数据
-void get_frame();
+void get_frame(bool is_debug=false);
 // 获取距离
 inline double cal_distance(pair<double, double> a, pair<double, double> b) {
     return sqrt((a.first - b.first) * (a.first - b.first) + (a.second - b.second) * (a.second - b.second));

@@ -99,19 +99,19 @@ void delete_line(int n) {
         fgets(tmp_txt, sizeof tmp_txt, stdin);
 }
 
-void get_frame() {
-    auto line_info = get_split_line_text();
+void get_frame(bool is_debug) {
+    auto line_info = get_split_line_text(is_debug);
     frame_id = line_info[0];
     money = line_info[1];
     delete_line();
     for(int i = 0; i < wb_list.size(); ++i) {
-        line_info = get_split_line_text();
+        line_info = get_split_line_text(is_debug);
         wb_list[i].left_time = line_info[3];
         wb_list[i].input_box = line_info[4];
         wb_list[i].output_box = line_info[5];
     }
     for(int i = 0; i < robot_list.size(); ++i) {
-        line_info = get_split_line_text();
+        line_info = get_split_line_text(is_debug);
         robot_list[i].workbrench_id = line_info[0];
         robot_list[i].carry_id = line_info[1];
         robot_list[i].time_conf = line_info[2];
@@ -122,7 +122,6 @@ void get_frame() {
         robot_list[i].face = line_info[7];
         robot_list[i].pos.first = line_info[8];
         robot_list[i].pos.second = line_info[9];
-        cerr<<robot_list[i].pos.first<< "  "<< robot_list[i].pos.second<<endl;
     }
     delete_line();
 }
