@@ -5,11 +5,11 @@
     {
         "type": "shell",
         "label": "cmake",
-        "command": "cmake",
-        "args": [
-            "-G \"MinGW Makefiles\"",
-            ".."
-        ]
+        "command": "cmake -G \"MinGW Makefiles\" ..",
+        // "args": [
+        //     "-G \"MinGW Makefiles\"",
+        //     ".."
+        // ]
     },
     {
         "label": "run_robot",

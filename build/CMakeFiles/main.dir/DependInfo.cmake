@@ -8,9 +8,9 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "F:/c/C++/robot-jsp/controler.cpp" "CMakeFiles/main.dir/controler.cpp.obj" "gcc" "CMakeFiles/main.dir/controler.cpp.obj.d"
-  "F:/c/C++/robot-jsp/main.cpp" "CMakeFiles/main.dir/main.cpp.obj" "gcc" "CMakeFiles/main.dir/main.cpp.obj.d"
-  "F:/c/C++/robot-jsp/robot.cpp" "CMakeFiles/main.dir/robot.cpp.obj" "gcc" "CMakeFiles/main.dir/robot.cpp.obj.d"
+  "C:/Users/admin/Desktop/Robot-JSP/controler.cpp" "CMakeFiles/main.dir/controler.cpp.obj" "gcc" "CMakeFiles/main.dir/controler.cpp.obj.d"
+  "C:/Users/admin/Desktop/Robot-JSP/main.cpp" "CMakeFiles/main.dir/main.cpp.obj" "gcc" "CMakeFiles/main.dir/main.cpp.obj.d"
+  "C:/Users/admin/Desktop/Robot-JSP/robot.cpp" "CMakeFiles/main.dir/robot.cpp.obj" "gcc" "CMakeFiles/main.dir/robot.cpp.obj.d"
   )
 
 # Targets to which this target links.
