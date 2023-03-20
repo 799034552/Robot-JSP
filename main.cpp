@@ -5,14 +5,16 @@ using namespace std;
 
 int main() {
     // 清除
-    setbuf(stdout, nullptr);
-    setbuf(stderr, nullptr);
+    // setbuf(stdout, nullptr);
+    // setbuf(stderr, nullptr);
     read_map();
     delete_line();
     printf("OK\n");
+    fflush(stdout);
     while(1) {
         get_frame(false);
         printf("%d\n", frame_id);
+        // 循环4个机器人
         for(int i = 0; i < robot_list.size(); ++i) {
             auto & this_robot = robot_list[i];
             double distance = INT_MAX;
@@ -21,10 +23,8 @@ int main() {
             if (this_robot.action == None) {
                 // 如果机器人没拿东西
                 if (this_robot.carry_id == 0) {
-                    cerr<<"index"<<endl;
                     // 找出能够拿东西的最近工作台
                     for(int j = 0; j < wb_list.size(); ++j) {
-                        // cerr<<wb_list[j].output_box<<endl;
                         if (wb_list[j].occupy_by != -1 || !wb_list[j].output_box) continue; // 被占用或者生产格没东西就下一个
                         double tmp = cal_distance(this_robot.pos, wb_list[j].pos);
                         if (distance > tmp) {
@@ -38,7 +38,6 @@ int main() {
                         this_robot.forward_id = forward_id;
                         wb_list[forward_id].occupy_by = i;
                     } else { // 如果没有找到
-                        this_robot.action = wait;
                     }
                 }
                 // 如果机器人拿了东西
@@ -62,7 +61,7 @@ int main() {
                         this_robot.forward_id = forward_id;
                         wb_list[forward_id].occupy_by = i;
                     } else { // 如果没有找到
-                        this_robot.action = wait;
+                       
                     }
                 }
             }
@@ -71,6 +70,7 @@ int main() {
             {
                 //是否已经到达目的地
                 if (this_robot.workbrench_id == this_robot.forward_id) {
+                    // cerr<<"get"<<endl;
                     //到达目的地
                     if (this_robot.action == buy)
                         printf("buy %d\n");
@@ -83,39 +83,45 @@ int main() {
                 }
                 // 还没有到达目的地
                 else {
+                    // cerr<<"get111"<<endl;
                     //全力加速
-                    printf("forward %d %lf\n", this_robot.id, 6);
+                    printf("forward %d %f\n", this_robot.id, 6.0);
                     // 判断机器人旋转方向
                     auto angle = cal_angle(this_robot.pos, wb_list[this_robot.forward_id].pos);
                     auto diss = this_robot.face - angle;
+                    double roate_speed = 0;
+
                     // 与预期方向一致
-                    if (abs(diss) < 0.001) {
-                        printf("rotate %d %lf\n", this_robot.id, 0);
+                    if (abs(diss) < 0.00001) {
+                        roate_speed = 0.0;
                     }
                     else if (this_robot.face > angle) {
                         diss = this_robot.face - angle;
                         if (diss <= PI) {
-                            printf("rotate %d %lf\n", this_robot.id, -PI);
+                            roate_speed = -PI;
                         } else {
-                            printf("rotate %d %lf\n", this_robot.id, PI);
+                            roate_speed = PI;
                         }
                     } else {
                         diss = angle - this_robot.face;
                         if (diss <= PI) {
-                            printf("rotate %d %lf\n", this_robot.id, PI);
+                            roate_speed = PI;
                         } else {
-                            printf("rotate %d %lf\n", this_robot.id, -PI);
+                            roate_speed = -PI;
                         }
                     }
+                    printf("rotate %d %f\n", this_robot.id, roate_speed);
                 }
             }
             // 如果机器人在分配任务后还是没事干
             else {
-                printf("forward %d %lf\n", this_robot.id, 0);
-                printf("rotate %d %lf\n", this_robot.id, 0);
+                // cerr<<"wait\n";
+                printf("forward %d %f\n", this_robot.id, 0.0);
+                printf("rotate %d %f\n", this_robot.id, 0.0);
             }
         }
         printf("OK\n");
+        fflush(stdout);
     }
     return 0;
 }
