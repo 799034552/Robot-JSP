@@ -12,7 +12,6 @@ int main() {
     printf("OK\n");
     while(1) {
         get_frame(false);
-        // cerr<<money<<endl;
         printf("%d\n", frame_id);
         for(int i = 0; i < robot_list.size(); ++i) {
             auto & this_robot = robot_list[i];
