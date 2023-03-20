@@ -21,6 +21,7 @@ int main() {
             if (this_robot.action == None) {
                 // 如果机器人没拿东西
                 if (this_robot.carry_id == 0) {
+                    cerr<<"index"<<endl;
                     // 找出能够拿东西的最近工作台
                     for(int j = 0; j < wb_list.size(); ++j) {
                         // cerr<<wb_list[j].output_box<<endl;
