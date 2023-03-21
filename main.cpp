@@ -22,11 +22,10 @@ int main() {
         for(int i = 0; i < 4; ++i) {
             auto & this_robot = robot_list[i];
             double distance = INT_MAX;
-            int forward_id = -1;
+            int forward_id = -1; // 当前机器人目的地id，-1表示没有
+            int favourite_type = -1; // 当前机器人偏好去的工作台类型
             // 如果一个机器人没事干
             if (this_robot.action == None) {
-                // cerr<<this_robot.forward_id<<endl;
-                // cerr<<"sfddasf\n";
                 // 如果机器人没拿东西
                 if (this_robot.carry_id == 0) {
                     // 找出能够拿东西的最近工作台
@@ -55,19 +54,37 @@ int main() {
                     for(auto wb_type : product_to_sell[this_robot.carry_id]) {
                         // 在特定类别中寻找
                         for (auto wb_i: type_to_wb[wb_type]) {
+                            // bool is_force = false; // 是否强迫输出，用于偏好判断
                             auto & wb = wb_list[wb_i];
                             if((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id)) continue; //被占用或者输入格满就下一个
                             double tmp = cal_distance(this_robot.pos, wb.pos);
-                            // if (favourite_map[wb_type].)
+                            // 如果他是7号并且在生产中，尽可能不要给他
+                            if (wb.type == 7 && wb.left_time > 300) {
+                                tmp += MAX_NUMBER / 2;
+                            }
                             if (distance > tmp) {
                                 forward_id = wb.id;
                                 distance = tmp;
                             }
-
                         }
                     }
                     //如果找到了
                     if (forward_id != -1) {
+                        // 偏好选择
+                        // for (auto wb_i: favourite_map[wb_list[forward_id].type]) {
+                        //     // cerr<<wb_list[favourite_map[wb_list[forward_id].type][0]].pos.first
+                        //     // <<" "
+                        //     // <<wb_list[favourite_map[wb_list[forward_id].type][0]].pos.second
+                        //     // <<endl;
+                        //     // exit(0);
+                        //     auto & wb = wb_list[wb_i];
+                        //     if((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id)) continue; //被占用或者输入格满就下一个
+                        //     // 出现同类型的没有在生产的偏好工作台
+                        //     if (wb.left_time == -1) {
+                        //         forward_id = wb.id;
+                        //     }
+                        //     break;
+                        // }
                         this_robot.action = sell;
                         this_robot.forward_id = forward_id;
                         wb_list[forward_id].input_occupy_by[this_robot.carry_id] = i;
@@ -79,59 +96,19 @@ int main() {
             // 机器人有事干
             if (this_robot.action == buy || this_robot.action == sell)
             {
-                // if (this_robot.id == 0) {
-                //     cerr<<this_robot.forward_id<<" "<<wb_list[this_robot.forward_id].type<<endl;
-                // }
                 // 还没有到达目的地
                 if (this_robot.workbrench_id != this_robot.forward_id){
-                    // cerr<<"get111"<<endl;
                     auto distance = cal_distance(this_robot.pos, wb_list[this_robot.forward_id].pos);
-                    // if (distance < 4) {
-                    //     //如果距离目标3米内
-                    //     printf("forward %d %f\n", this_robot.id, 3.0);
-
-                    // }
-                    // else {
-                    //     //全力加速
-                    //     printf("forward %d %f\n", this_robot.id, 100.0);
-                    // }
-                    
+                   
                     // 判断机器人旋转方向
                     auto angle = cal_angle(this_robot.pos, wb_list[this_robot.forward_id].pos);
                     std::pair <double,double> control = this_robot.Robot_controle(distance,angle);
                     printf("forward %d %f\n", this_robot.id, control.first);
                     printf("rotate %d %f\n", this_robot.id, control.second);
-
-                    // auto diss = this_robot.face - angle;
-                    // double roate_speed = 0;
-
-                    // // 与预期方向一致
-                    // if (abs(diss) < 0.00001) {
-                    //     roate_speed = 0.0;
-                    // }
-                    // else if (this_robot.face > angle) {
-                    //     diss = this_robot.face - angle;
-                    //     if (diss <= PI) {
-                    //         roate_speed = -PI;
-                    //     } else {
-                    //         roate_speed = PI;
-                    //     }
-                    // } else {
-                    //     diss = angle - this_robot.face;
-                    //     if (diss <= PI) {
-                    //         roate_speed = PI;
-                    //     } else {
-                    //         roate_speed = -PI;
-                    //     }
-                    // }
-                    // printf("rotate %d %f\n", this_robot.id, roate_speed);
-                    
                 }
                 //是否已经到达目的地
                 else  {
-                    // cerr<<"get"<<endl;
                     //到达目的地
-                    // cerr<< "errrrrrrrrrrrrr\n";
                     if (this_robot.action == buy) {
                         printf("buy %d\n", this_robot.id);
                         wb_list[this_robot.forward_id].output_occupy_by = -1;
