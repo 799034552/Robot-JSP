@@ -15,7 +15,6 @@ class Robot {
     std::pair<double,double> linear_speed;
     double face = 0;
 
-    double last_face_diff = 0; //上一帧与目标朝向差
     int forward_id = -1; //目标工作台，-1表示没有
     int action = None; 
     Robot() {};
