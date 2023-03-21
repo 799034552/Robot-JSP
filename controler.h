@@ -39,6 +39,7 @@ extern vector<vector<int>> type_to_wb;
 extern unordered_map<int, vector<int>> wb_can_put;
 extern unordered_map<int, vector<int>> product_to_sell;
 extern unordered_map<int, vector<int>> favourite_map;
+extern bool debug;
 
 
 

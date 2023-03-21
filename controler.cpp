@@ -5,7 +5,7 @@ char tmp_txt[1024];
 vector<Robot> robot_list;
 vector<Workbench> wb_list;
 unordered_map<int, vector<int>> favourite_map;
-
+bool debug = false;
 // 通过工作台类型读取工作台列表
 vector<vector<int>> type_to_wb(10, vector<int>());
 long frame_id;

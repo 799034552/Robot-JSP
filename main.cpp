@@ -17,7 +17,7 @@ int main() {
     // }
     // exit(0);
     while(1) {
-        get_frame(false);
+        get_frame(debug);
         printf("%d\n", frame_id);
         for(int i = 0; i < 4; ++i) {
             auto & this_robot = robot_list[i];
