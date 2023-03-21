@@ -70,9 +70,11 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
 
     bool a = distance < 2 * rotate_radius && abs(angle_diff) > rotate_angle_threshold;                      // 防转圈
     bool b = robot_wall_re.first < 0.3 * rotate_radius && abs(robot_wall_re.second) < wall_angle_threshold; // 防撞墙
+    bool test = false;
     if (b)
     {
         forward_speed = k3 * robot_wall_re.first;
+        test = true;
     }
     else if (a)
     {
@@ -83,6 +85,17 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
     else
     {
         forward_speed = 6.0;
+    }
+
+    if (this->id == 0)
+    {
+        k++;
+        if(k%100==1){
+        cerr <<forward_speed<<" " <<distance << " " << angle_diff << endl;
+        cerr << robot_wall_re.first<< " "<<robot_wall_re.second<<" "<<test<<endl;
+        cerr <<this->pos.first<<" "<<this->pos.second<<endl;
+        cerr<<"----------------------------------->"<<endl;
+        }
     }
 
     std::pair<double, double> result(forward_speed, rotate_speed);
