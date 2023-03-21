@@ -141,7 +141,7 @@ double cal_angle(pair<double, double> start, pair<double, double> end) {
 bool can_somebody_put(int pr_type) {
     for (auto &wb_type: product_to_sell[pr_type]) {
         for(auto &wb_i : type_to_wb[wb_type]) {
-            if (!wb_list[wb_i].get_input_box_item(pr_type))
+            if (!wb_list[wb_i].get_input_box_item(pr_type) && wb_list[wb_i].input_occupy_by[pr_type] == -1)
                 return true;
         }
     }
