@@ -6,7 +6,7 @@ using namespace std;
 std::pair<double, double> Robot::Robot_controle(double distance, double angle)
 {
     static double kp = 20;
-    static double kd = 1;
+    static double kd = 0.01;
     double forward_speed = 0;
     double rotate_speed = 0;
 
@@ -17,11 +17,11 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
         angle_diff += 2 * PI;
 
     // 负数表示顺时针旋转
-    rotate_speed = kp * angle_diff + kd * rotate_speed;
+    rotate_speed = kp * angle_diff - kd * this->rotate_speed;
     // if(this->id==0){
     //     cerr<<rotate_speed<<" "<<angle_diff<<endl;
     // }
-    if (distance < 4)
+    if (distance < 3)
     {
         // 如果距离目标3米内
         forward_speed = 3.0;
