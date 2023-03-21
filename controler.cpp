@@ -5,7 +5,7 @@ char tmp_txt[1024];
 vector<Robot> robot_list;
 vector<Workbench> wb_list;
 // 通过工作台类型读取工作台列表
-vector<vector<Workbench*>> type_to_wb(10, vector<Workbench*>());
+vector<vector<int>> type_to_wb(10, vector<int>());
 long frame_id;
 int money;
 // 产品能放到什么工作台
@@ -62,7 +62,7 @@ void read_map() {
                 wb_list.back().id = wb_list.size() - 1;
                 wb_list.back().pos.first = 0.25 + 0.5 * j ;
                 wb_list.back().pos.second = 50 - ( i*0.5 + 0.25);
-                type_to_wb[tmp_txt[j] - '0'].push_back(&wb_list.back());
+                type_to_wb[tmp_txt[j] - '0'].emplace_back(wb_list.back().id);
                 break;
             }
         }
@@ -104,6 +104,7 @@ void get_frame(bool is_debug) {
     frame_id = line_info[0];
     money = line_info[1];
     delete_line();
+    
     for(int i = 0; i < wb_list.size(); ++i) {
         line_info = get_split_line_text(is_debug);
         wb_list[i].left_time = line_info[3];
@@ -133,7 +134,17 @@ bool Workbench::get_input_box_item(int n) {
 
 double cal_angle(pair<double, double> start, pair<double, double> end) {
     auto x = end.first - start.first;
-    auto y = end.second - start.first;
+    auto y = end.second - start.second;
     return atan2(y, x);
+}
+
+bool can_somebody_put(int pr_type) {
+    for (auto &wb_type: product_to_sell[pr_type]) {
+        for(auto &wb_i : type_to_wb[wb_type]) {
+            if (!wb_list[wb_i].get_input_box_item(pr_type))
+                return true;
+        }
+    }
+    return false;
 }
 
