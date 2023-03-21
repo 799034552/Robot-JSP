@@ -6,10 +6,12 @@
 #include <vector>
 #include <math.h>
 #include "robot.h"
+#include <algorithm>
 #include <unordered_map>
 using namespace std;
 
 #define PI 3.14159265359
+#define MAX_NUMBER 500000
 
 class Workbench {
     public:
@@ -36,6 +38,7 @@ extern int money;
 extern vector<vector<int>> type_to_wb;
 extern unordered_map<int, vector<int>> wb_can_put;
 extern unordered_map<int, vector<int>> product_to_sell;
+extern unordered_map<int, vector<int>> favourite_map;
 
 
 
@@ -56,6 +59,8 @@ inline double cal_distance(pair<double, double> a, pair<double, double> b) {
 double cal_angle(pair<double, double> start, pair<double, double> end);
 // 查看他是否能够被笑话
 bool can_somebody_put(int pr_type);
+// 初始化
+void init();
 
 #endif
 

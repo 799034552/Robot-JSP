@@ -10,6 +10,7 @@ int main() {
     read_map();
     delete_line();
     printf("OK\n");
+    init();
     fflush(stdout);
     // for(int i = 0; i < wb_list.size(); ++i) {
     //     cerr<<wb_list[i].id<<endl;
@@ -56,12 +57,13 @@ int main() {
                         for (auto wb_i: type_to_wb[wb_type]) {
                             auto & wb = wb_list[wb_i];
                             if((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id)) continue; //被占用或者输入格满就下一个
-                            
                             double tmp = cal_distance(this_robot.pos, wb.pos);
+                            // if (favourite_map[wb_type].)
                             if (distance > tmp) {
                                 forward_id = wb.id;
                                 distance = tmp;
                             }
+
                         }
                     }
                     //如果找到了
