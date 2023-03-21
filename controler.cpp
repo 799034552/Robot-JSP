@@ -4,6 +4,8 @@ using namespace std;
 char tmp_txt[1024];
 vector<Robot> robot_list;
 vector<Workbench> wb_list;
+unordered_map<int, vector<int>> favourite_map;
+bool debug = false;
 // 通过工作台类型读取工作台列表
 vector<vector<int>> type_to_wb(10, vector<int>());
 long frame_id;
@@ -143,8 +145,32 @@ bool can_somebody_put(int pr_type) {
         for(auto &wb_i : type_to_wb[wb_type]) {
             if (!wb_list[wb_i].get_input_box_item(pr_type) && wb_list[wb_i].input_occupy_by[pr_type] == -1)
                 return true;
+            // if (!wb_list[wb_i].get_input_box_item(pr_type))
+            //     return true;
         }
     }
     return false;
+}
+
+void init() {
+    // 对7号工作台的位置进行排序
+    vector<pair<double, int>> dis_total; // 7号工作台最近的4、5、6号工作台距离之和
+    for(auto &outer_wb_i: type_to_wb[7]) {
+        dis_total.emplace_back(0, wb_list[outer_wb_i].id);
+        int a[3] = {4,5,6};
+        for(const auto &i : a) {
+            double min_dis = MAX_NUMBER;
+            for(auto &inner_wb_i : type_to_wb[4]) {
+                auto tmp = cal_distance(wb_list[outer_wb_i].pos, wb_list[inner_wb_i].pos);
+                if (tmp < min_dis)
+                    min_dis = tmp;
+            }
+            dis_total.back().first += min_dis;
+        }
+    }
+    sort(dis_total.begin(),dis_total.end(),[](pair<double, int> &a, pair<double, int> &b) -> bool {return a.first < b.first;});
+    for(auto & tmp: dis_total) {
+        favourite_map[7].emplace_back(tmp.second);
+    }
 }
 
