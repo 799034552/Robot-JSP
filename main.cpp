@@ -84,41 +84,45 @@ int main() {
                 if (this_robot.workbrench_id != this_robot.forward_id){
                     // cerr<<"get111"<<endl;
                     auto distance = cal_distance(this_robot.pos, wb_list[this_robot.forward_id].pos);
-                    if (distance < 4) {
-                        //如果距离目标3米内
-                        printf("forward %d %f\n", this_robot.id, 3.0);
+                    // if (distance < 4) {
+                    //     //如果距离目标3米内
+                    //     printf("forward %d %f\n", this_robot.id, 3.0);
 
-                    }
-                    else {
-                        //全力加速
-                        printf("forward %d %f\n", this_robot.id, 100.0);
-                    }
+                    // }
+                    // else {
+                    //     //全力加速
+                    //     printf("forward %d %f\n", this_robot.id, 100.0);
+                    // }
                     
                     // 判断机器人旋转方向
                     auto angle = cal_angle(this_robot.pos, wb_list[this_robot.forward_id].pos);
-                    auto diss = this_robot.face - angle;
-                    double roate_speed = 0;
+                    std::pair <double,double> control = this_robot.Robot_controle(distance,angle);
+                    printf("forward %d %f\n", this_robot.id, control.first);
+                    printf("rotate %d %f\n", this_robot.id, control.second);
 
-                    // 与预期方向一致
-                    if (abs(diss) < 0.00001) {
-                        roate_speed = 0.0;
-                    }
-                    else if (this_robot.face > angle) {
-                        diss = this_robot.face - angle;
-                        if (diss <= PI) {
-                            roate_speed = -PI;
-                        } else {
-                            roate_speed = PI;
-                        }
-                    } else {
-                        diss = angle - this_robot.face;
-                        if (diss <= PI) {
-                            roate_speed = PI;
-                        } else {
-                            roate_speed = -PI;
-                        }
-                    }
-                    printf("rotate %d %f\n", this_robot.id, roate_speed);
+                    // auto diss = this_robot.face - angle;
+                    // double roate_speed = 0;
+
+                    // // 与预期方向一致
+                    // if (abs(diss) < 0.00001) {
+                    //     roate_speed = 0.0;
+                    // }
+                    // else if (this_robot.face > angle) {
+                    //     diss = this_robot.face - angle;
+                    //     if (diss <= PI) {
+                    //         roate_speed = -PI;
+                    //     } else {
+                    //         roate_speed = PI;
+                    //     }
+                    // } else {
+                    //     diss = angle - this_robot.face;
+                    //     if (diss <= PI) {
+                    //         roate_speed = PI;
+                    //     } else {
+                    //         roate_speed = -PI;
+                    //     }
+                    // }
+                    // printf("rotate %d %f\n", this_robot.id, roate_speed);
                     
                 }
                 //是否已经到达目的地
