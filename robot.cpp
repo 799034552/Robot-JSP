@@ -15,6 +15,7 @@ std::pair<double, double> robot_wall_relation(std::pair<double,double> pos, doub
     double angle = 0;
     if(50-pos.first<distance_to_wall){
         distance_to_wall = 50-pos.first;
+
     }
     else if (pos.first<distance_to_wall)
     {
@@ -52,17 +53,17 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
     rotate_speed = kp * angle_diff - kd * this->rotate_speed;
 
     // 计算离墙壁距离
-    std::pair<double, double> robot_wall_re = robot_wall_relation(this->pos);
+    std::pair<double, double> robot_wall_re = robot_wall_relation(this->pos, this->face);
 
     if (distance < 2 * rotate_radius && abs(angle_diff) > angle_threshold)
     {
         forward_speed = -k1 * abs(angle_diff) + k2 * distance;
         forward_speed = max(3.0, forward_speed);
     }
-    else if (robot_wall_re.first<rotate_radius &&)
-    {
-        /* code */
-    }
+    // else if (robot_wall_re.first<rotate_radius &&)
+    // {
+    //     /* code */
+    // }
     
     else
     {
