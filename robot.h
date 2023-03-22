@@ -36,5 +36,7 @@ public:
     std::pair<double, double> Robot_controle(double distance, double angle); // 给定距离目标的距离和角度，输出前进速度和旋转速度
     double robot_speed_pid(double distance);
     Speed_pid speed_pid;
+
+    std::pair<double, double> power_field();
 };
 #endif
