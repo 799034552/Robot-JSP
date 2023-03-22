@@ -32,6 +32,9 @@ unordered_map<int, vector<int>> wb_can_put {
     {8, vector<int>{7}},
     {9, vector<int>{1,2,3,4,5,6,7}},
 };
+// 紧急通知列表，快来取我列表
+vector<Urgent_task*> urgent_list;
+
 
 
 bool readUntilOK(char* t) {
@@ -171,6 +174,67 @@ void init() {
     sort(dis_total.begin(),dis_total.end(),[](pair<double, int> &a, pair<double, int> &b) -> bool {return a.first < b.first;});
     for(auto & tmp: dis_total) {
         favourite_map[7].emplace_back(tmp.second);
+    }
+}
+
+//链式找到离他最近的能发任务的工作台
+bool sub_create_urgent(Urgent_task* task, int wb_i) {
+    // 如果他已经有任务
+    if (wb_list[wb_i].urgent_task != nullptr) {
+        delete task;
+        return false;
+    }
+    auto &wb = wb_list[wb_i];
+    // 如果他是最后一级
+    switch (wb.type)
+    {
+    case 1:
+    case 2:
+    case 3:
+        return true;
+    default:
+        break;
+    }
+    // 他自己是否有东西输出
+    if (wb.output_box) {
+        return true;
+    }
+    
+    // 先找到他会缺什么
+    for(auto &need_type: wb_can_put[wb.type]) {
+        // 如果他真的缺
+        if (!wb.get_input_box_item(need_type)) {
+            double distance = MAX_NUMBER;
+            int forward_id = -1;
+            // 找到离他最近的那个工作台
+            for(auto &wb_i_2: type_to_wb[need_type]) {
+                auto tmp = cal_distance(wb.pos, wb_list[wb_i_2].pos);
+                if (tmp < distance) {
+                    distance = tmp;
+                    forward_id = wb_i_2;
+                }
+            }
+            if (sub_create_urgent(task,  forward_id)) {
+                task->task_list.emplace_back(forward_id, wb_i);
+            }
+        }
+    }
+    return true;
+}
+
+void create_urgent() {
+    for(auto &wb_i: type_to_wb[7]) {
+        auto & wb = wb_list[wb_i];
+        // 工作台输入有2个以上东西并且没有输入列表并且没有在生成的时候
+        if ((wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6)) > 1 && wb.urgent_task == nullptr && wb.left_time < 200) {
+            // 发布紧急任务
+            auto task = new Urgent_task();
+            if (sub_create_urgent(task, wb.id)) {
+                urgent_list.push_back(task);
+                for(int i = 0; i < task->task_list.size(); ++i) 
+                    task->task_status.emplace_back(-1);
+            }
+        }
     }
 }
 
