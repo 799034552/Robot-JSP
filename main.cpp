@@ -23,8 +23,20 @@ int main() {
             double distance = MAX_NUMBER;
             int forward_id = -1; // 当前机器人目的地id，-1表示没有
             int favourite_type = -1; // 当前机器人偏好去的工作台类型
+            int back_forward_id = -1; //暂时保存机器人的前往的目的地
             // 如果一个机器人没事干
-            if (this_robot.action == None) {
+            // if (this_robot.action == None) {
+            if (this_robot.action == None || this_robot.action == sell || this_robot.action == buy) {
+                // 先解除当前机器人的所有占用
+                if (this_robot.action == buy) {
+                    wb_list[this_robot.forward_id].output_occupy_by = -1;
+                    back_forward_id = this_robot.forward_id;
+                }
+                else if (this_robot.action == sell) {
+                    wb_list[this_robot.forward_id].input_occupy_by[this_robot.carry_id] = -1;
+                    back_forward_id = this_robot.forward_id;
+                }
+
                 // 如果机器人没拿东西
                 if (this_robot.carry_id == 0) {
                     // 找出能够拿东西的最近工作台
@@ -91,9 +103,36 @@ int main() {
                        
                     }
                 }
+                // 本来是有任务的
+                if (back_forward_id != -1) {
+                    //现在也有任务
+                    if (forward_id != -1) {
+                        //如果任务不相同
+                        if (back_forward_id != forward_id) {
+                            // 以前任务有人能消化就恢复
+                            if(can_somebody_put(wb_list[back_forward_id].type)) {
+                                if (this_robot.action == buy) {
+                                    wb_list[this_robot.forward_id].output_occupy_by = -1;
+                                    wb_list[back_forward_id].output_occupy_by = this_robot.id;
+                                    this_robot.forward_id = back_forward_id;
+                                }
+                                else if (this_robot.action == sell) {
+                                    wb_list[this_robot.forward_id].input_occupy_by[this_robot.carry_id] = -1;
+                                    wb_list[back_forward_id].input_occupy_by[this_robot.carry_id] = this_robot.id;
+                                    this_robot.forward_id = back_forward_id;
+                                }
+                            }
+                        }
+                    }
+                    // 现在没任务
+                    else {
+                        this_robot.forward_id = -1;
+                        this_robot.action = None;
+                    }
+                }
+
             }
         }
-
         for(int i = 0; i < 4; ++i) {
             auto & this_robot = robot_list[i];
             // 机器人有事干
