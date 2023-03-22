@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string.h>
+#include <limits.h>
 #include "controler.h"
 using namespace std;
 
@@ -91,6 +92,10 @@ int main() {
                     }
                 }
             }
+        }
+
+        for(int i = 0; i < 4; ++i) {
+            auto & this_robot = robot_list[i];
             // 机器人有事干
             if (this_robot.action == buy || this_robot.action == sell)
             {
@@ -130,6 +135,9 @@ int main() {
             }
         }
         printf("OK\n");
+
+        if (frame_id == 9000)
+            break;
     }
     return 0;
 }
