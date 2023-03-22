@@ -143,3 +143,13 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
     std::pair<double, double> result(forward_speed, rotate_speed);
     return result;
 }
+
+double Robot::robot_speed_pid(double distance)
+{
+    static double kp = 0, kd = 0, ki = 0;   // 外环pid
+    static double kip = 0, kid = 0, kii = 0;    // 内环pid
+
+    double error = distance; // 与目标点偏差
+    this->speed_pid.integral = this->speed_pid.integral + ki*error;
+    this->speed_pid.previous_error
+}
