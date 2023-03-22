@@ -12,16 +12,14 @@ int main() {
     printf("OK\n");
     init();
     fflush(stdout);
-    // for(int i = 0; i < wb_list.size(); ++i) {
-    //     cerr<<wb_list[i].id<<endl;
-    // }
-    // exit(0);
     while(1) {
         get_frame(debug);
         printf("%d\n", frame_id);
+        create_urgent(); // 创建紧急任务
+        
         for(int i = 0; i < 4; ++i) {
             auto & this_robot = robot_list[i];
-            double distance = INT_MAX;
+            double distance = MAX_NUMBER;
             int forward_id = -1; // 当前机器人目的地id，-1表示没有
             int favourite_type = -1; // 当前机器人偏好去的工作台类型
             // 如果一个机器人没事干
@@ -60,7 +58,7 @@ int main() {
                             double tmp = cal_distance(this_robot.pos, wb.pos);
                             // 如果他是7号并且在生产中，尽可能不要给他
                             if (wb.type == 7 && wb.left_time > 300) {
-                                tmp += MAX_NUMBER / 2;
+                                tmp *= 3;
                             }
                             if (distance > tmp) {
                                 forward_id = wb.id;
@@ -80,7 +78,7 @@ int main() {
                         //     auto & wb = wb_list[wb_i];
                         //     if((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id)) continue; //被占用或者输入格满就下一个
                         //     // 出现同类型的没有在生产的偏好工作台
-                        //     if (wb.left_time == -1) {
+                        //     if (wb.left_time < -1 && (wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6) > 1)) {
                         //         forward_id = wb.id;
                         //     }
                         //     break;

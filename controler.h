@@ -13,6 +13,7 @@ using namespace std;
 #define PI 3.14159265359
 #define MAX_NUMBER 500000
 
+struct Urgent_task;
 class Workbench {
     public:
     int id;
@@ -21,13 +22,19 @@ class Workbench {
     int left_time; //剩余生产时间
     int input_box;
     int output_box;
-
     int output_occupy_by = -1; //拿东西是否被占用
     vector<int> input_occupy_by; //放东西是否被占用
-    Workbench(int _type):type(_type),input_occupy_by(vector<int>(10, -1)) {
+    Urgent_task* urgent_task;
+    Workbench(int _type):type(_type),input_occupy_by(vector<int>(10, -1)),urgent_task(nullptr) {
 
     };
     bool get_input_box_item(int n); // 获取对应的输入格子是否被占用
+};
+
+// 紧急任务列表
+struct Urgent_task {
+    vector<pair<int, int>> task_list;
+    vector<int> task_status; // 任务的抢占情况，-1 没有人抢任务 -2 该任务已完成
 };
 
 extern char tmp_txt[1024]; //临时数据存储
@@ -62,6 +69,7 @@ double cal_angle(pair<double, double> start, pair<double, double> end);
 bool can_somebody_put(int pr_type);
 // 初始化
 void init();
+void create_urgent();
 
 #endif
 
