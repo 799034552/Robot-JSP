@@ -81,7 +81,7 @@ double length(std::pair<double, double> vec)
 std::pair<double, double> unit_vector(std::pair<double, double> vec)
 {
     std::pair<double, double> result;
-    double len = length(vec)+0.00001;
+    double len = length(vec) + 0.00001;
     result.first = vec.first / len;
     result.second = vec.second / len;
     return result;
@@ -89,11 +89,14 @@ std::pair<double, double> unit_vector(std::pair<double, double> vec)
 
 std::pair<double, double> Robot::Robot_controle(double distance, double angle)
 {
-    static double kp = 20;                       //  转弯p参数
-    static double kd = 0.01;                     //  转弯d参数
-    static double k1 = 1.8;                      //  前进速度参数，用转弯半径控制速度
-    static double k2 = 2;                        //  前进速度参数，用距离工作台的距离控制速度
-    static double k3 = 1;                        //  前进速度参数,用离墙的距离控制速度
+    static double kp = 20;    //  转弯p参数
+    static double kd = 0.01;  //  转弯d参数
+    static double k1 = 1.8;   //  前进速度参数，用转弯半径控制速度
+    static double k2 = 2;     //  前进速度参数，用距离工作台的距离控制速度
+    static double k3 = 1;     //  前进速度参数,用离墙的距离控制速度
+    static double ksp = 2;    //  势力场控制速度p参数
+    static double ksd = 0.04; //  势力场控制速度d参数
+
     static double rotate_radius = 2.18;          // 最大转弯半径
     static double rotate_angle_threshold = 0.4;  // 角度大于此阈值，考虑减速
     static double wall_angle_threshold = PI / 2; // 机器人与墙壁的角度小于此阈值，考虑减速
@@ -113,10 +116,10 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
     // 负数表示顺时针旋转
     rotate_speed = kp * angle_diff - kd * this->rotate_speed;
 
-    std::pair<double,double> forward_direction(cos(this->face),sin(this->face));
-    double traction = (forward_direction.first*net_force.first+forward_direction.second*net_force.second);//前进方向的力
-    forward_speed = k3*traction;
-
+    std::pair<double, double> forward_direction(cos(this->face), sin(this->face));
+    double traction = (forward_direction.first * net_force.first + forward_direction.second * net_force.second); // 前进方向的力
+    forward_speed = ksp * traction + ksd * (length(this->linear_speed) - this->speed_pid.last_speed);
+    this->speed_pid.last_speed = length(this->linear_speed);
 
     // 计算转弯的圆心坐标
     // std::pair<double, double> po((-this->rotate_speed) * (this->linear_speed.second),
@@ -143,18 +146,18 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
     //     forward_speed = 6.0;
     // }
 
-    if (this->id == 1 && frame_id > 680 && frame_id < 700)
-    {
-        // cerr << frame_id << " " << test << endl;
-        cerr << "set forward speed: " << forward_speed << ", "<<traction<<" set rotate speed: " << rotate_speed << endl;
-        cerr << "actual forward speed: " << length(this->linear_speed) << " actual rotate speed: " << this->rotate_speed << endl;
-        // cerr << "distance o to wall:" << dis << " radius:" << r;
-        // cerr << this->linear_speed.first << ", " << this->linear_speed.second;
-        cerr << distance << ", " << angle_diff <<endl;
-        // cerr << robot_wall_re.first << " " << robot_wall_re.second << endl;
-        // cerr << this->face << " " << this->pos.first << " " << this->pos.second << endl;
-        cerr << "----------------------------------->" << endl;
-    }
+    // if (this->id == 1 && frame_id > 600 && frame_id < 700)
+    // {
+    //     cerr << frame_id << endl;
+    //     cerr << "set forward speed: " << forward_speed << ", "<<traction<<" set rotate speed: " << rotate_speed << endl;
+    //     cerr << "actual forward speed: " << length(this->linear_speed) << " actual rotate speed: " << this->rotate_speed << endl;
+    //     // cerr << "distance o to wall:" << dis << " radius:" << r;
+    //     // cerr << this->linear_speed.first << ", " << this->linear_speed.second;
+    //     cerr << distance << ", " << angle_diff <<endl;
+    //     // cerr << robot_wall_re.first << " " << robot_wall_re.second << endl;
+    //     // cerr << this->face << " " << this->pos.first << " " << this->pos.second << endl;
+    //     cerr << "----------------------------------->" << endl;
+    // }
 
     std::pair<double, double> result(forward_speed, rotate_speed);
     return result;
@@ -207,6 +210,8 @@ std::pair<double, double> cal_repulsion(std::pair<double, double> current_pos, s
 {
     std::pair<double, double> result;
     double distance = cal_distance(current_pos, obstacle_pos);
+    if (distance > p0)
+        return {0,0};
     double scale = k * (1 / distance - 1 / p0);
     scale /= distance * distance;
     result.first = scale * (current_pos.first - obstacle_pos.first) / distance;
@@ -218,9 +223,9 @@ std::pair<double, double> Robot::power_field()
 {
     static double k1 = 4;                                                 // 引力场参数
     static double k2 = 60;                                                // 斥力场参数
-    static double p0 = 2;                                                // 斥力场产生作用距离
+    static double p0 = 8;                                                 // 斥力场产生作用距离
     static double wk = 20;                                                // 墙壁斥力场scale
-    static double wp = 1;                                                 // 墙壁斥力场产生作用距离
+    static double wp = 2;                                                 // 墙壁斥力场产生作用距离
     std::pair<double, double> target_pos = wb_list[this->forward_id].pos; // 目标位置
     std::pair<double, double> current_pos = this->pos;                    // 当前位置
 

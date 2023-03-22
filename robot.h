@@ -15,6 +15,7 @@ typedef struct Speed_pid
     double integral = 0;             // 积分和
     double previous_error_inner = 0; // 内环PID上一次偏差
     double integral_inner = 0;       // 内环PID积分和
+    double last_speed = 0;
 }Speed_pid;
 
 class Robot
