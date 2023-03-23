@@ -88,6 +88,15 @@ std::pair<double, double> unit_vector(std::pair<double, double> vec)
     return result;
 }
 
+// 将向量逆时针旋转角度 a
+std::pair<double, double> rotate_vector(std::pair<double, double> vec, double a)
+{
+    std::pair<double, double> result;
+    result.first = vec.first * cos(a) - vec.second * sin(a);
+    result.second = vec.first * sin(a) + vec.second * cos(a);
+    return result;
+}
+
 std::pair<double, double> Robot::Robot_controle(double distance, double angle)
 {
     static double kp = 20;    //  转弯p参数
@@ -147,18 +156,18 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
     //     forward_speed = 6.0;
     // }
 
-    // if (this->id == 1 && frame_id > 600 && frame_id < 700)
-    // {
-    //     cerr << frame_id << endl;
-    //     cerr << "set forward speed: " << forward_speed << ", "<<traction<<" set rotate speed: " << rotate_speed << endl;
-    //     cerr << "actual forward speed: " << length(this->linear_speed) << " actual rotate speed: " << this->rotate_speed << endl;
-    //     // cerr << "distance o to wall:" << dis << " radius:" << r;
-    //     // cerr << this->linear_speed.first << ", " << this->linear_speed.second;
-    //     cerr << distance << ", " << angle_diff <<endl;
-    //     // cerr << robot_wall_re.first << " " << robot_wall_re.second << endl;
-    //     // cerr << this->face << " " << this->pos.first << " " << this->pos.second << endl;
-    //     cerr << "----------------------------------->" << endl;
-    // }
+    if ((this->id == 1) && frame_id > 2500 && frame_id < 2600)
+    {
+        // cerr << frame_id << endl;
+        cerr << "set forward speed: " << forward_speed << ", "<<traction<<" set rotate speed: " << rotate_speed << endl;
+        cerr << "actual forward speed: " << length(this->linear_speed) << " actual rotate speed: " << this->rotate_speed << endl;
+        // cerr << "distance o to wall:" << dis << " radius:" << r;
+        // cerr << this->linear_speed.first << ", " << this->linear_speed.second;
+        cerr << distance << ", " << angle_diff <<endl;
+        // cerr << robot_wall_re.first << " " << robot_wall_re.second << endl;
+        // cerr << this->face << " " << this->pos.first << " " << this->pos.second << endl;
+        cerr << "************************************" << endl;
+    }
 
     std::pair<double, double> result(forward_speed, rotate_speed);
     return result;
@@ -204,10 +213,11 @@ std::pair<double, double> cal_attraction(std::pair<double, double> current_pos, 
     std::pair<double, double> result;
     result.first = k * (target_pos.first - current_pos.first);
     result.second = k * (target_pos.second - current_pos.second);
-    double distance = cal_distance(current_pos,target_pos);
-    if(distance>14){
-        result.first = result.first/distance*14;
-        result.second = result.second/distance*14;
+    double distance = cal_distance(current_pos, target_pos);
+    if (distance > 14)
+    {
+        result.first = result.first / distance * 14;
+        result.second = result.second / distance * 14;
     }
     return result;
 }
@@ -242,8 +252,8 @@ std::pair<double, double> cal_repulsion(std::pair<double, double> current_pos, s
 std::pair<double, double> Robot::power_field()
 {
     static double k1 = 4;                                                 // 引力场参数
-    static double k2 = 60;                                                // 斥力场参数
-    static double p0 = 3;                                                 // 斥力场产生作用距离
+    static double k2 = 15;                                                // 斥力场参数
+    static double p0 = 6;                                                 // 斥力场产生作用距离
     static double wk = 20;                                                // 墙壁斥力场scale
     static double wp = 2;                                                 // 墙壁斥力场产生作用距离
     std::pair<double, double> target_pos = wb_list[this->forward_id].pos; // 目标位置
@@ -268,12 +278,15 @@ std::pair<double, double> Robot::power_field()
             repulsion.first *= 0;
             repulsion.second *= 0;
         }
-        if (abs(this->face) + abs(robot_list[i].face) >= PI / 180 * 160 && abs(this->face) + abs(robot_list[i].face) <= PI / 180 * 200)
-        {
-            test = true;
-            repulsion.first = repulsion.first * cos(PI / 6) - repulsion.second * sin(PI / 6);
-            repulsion.second = repulsion.first * sin(PI / 6) + repulsion.second * cos(PI / 6);
-        }
+
+        // pair<double, double> robot(current_pos.first - robot_list[i].pos.first,current_pos.second - robot_list[i].pos.second)
+
+        // if (abs(this->face) + abs(robot_list[i].face) >= PI / 180 * 160 && abs(this->face) + abs(robot_list[i].face) <= PI / 180 * 200)
+        // {
+        //     test = true;
+        //     repulsion.first = repulsion.first * cos(PI / 6) - repulsion.second * sin(PI / 6);
+        //     repulsion.second = repulsion.first * sin(PI / 6) + repulsion.second * cos(PI / 6);
+        // }
         force.push_back(repulsion);
     }
     // 计算墙壁斥力
@@ -288,17 +301,27 @@ std::pair<double, double> Robot::power_field()
         net_force.second += force[i].second;
     }
 
-    if ((this->id == 0||this->id == 1) && frame_id > 7950 && frame_id < 7980)
+    bool same_direction = false; // 斥力方向与前进方向相反
+    for (int i = 1; i < force.size(); ++i)
     {
-        temp = true;
-        cerr << frame_id << " " << this->id << ",   "<<test<<endl;
+        double angle1 = atan2(force[i].second, force[i].first);
+        double angle2 = atan2(net_force.second, net_force.first);
+        if (abs(angle1) + abs(angle2) >= PI / 180 * 160 && abs(angle1) + abs(angle2) <= PI / 180 * 200)
+            same_direction = true;
+    }
+    if (same_direction)
+        net_force = rotate_vector(net_force, PI / 6);
+
+    if ((this->id == 1) && frame_id > 2500 && frame_id < 2600)
+    {
+        cerr << frame_id << " " << this->id << ",   " << same_direction << endl;
         for (int i = 0; i < force.size(); ++i)
         {
-            cerr << i << " " << force[i].first << ", " << force[i].second << ", " << length(force[i]) << endl;
+            cerr << i << " " << force[i].first << ", " << force[i].second << ", " << length(force[i]) << " angle: " << atan2(force[i].second, force[i].first) << endl;
         }
-        cerr << "net_force: " << net_force.first << ", " << net_force.second << ", " << length(net_force) << endl;
+        cerr << "net_force: " << net_force.first << ", " << net_force.second << ", " << length(net_force) << " angle: " << atan2(net_force.second, net_force.first) << endl;
         cerr << "pos: " << this->pos.first << ", " << this->pos.second << endl;
-        cerr << "face: " << this->face<< endl;
+        cerr << "face: " << this->face << endl;
         cerr << "----------------------------------->" << endl;
     }
 
