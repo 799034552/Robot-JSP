@@ -4,7 +4,15 @@
 #include "controler.h"
 using namespace std;
 
-int main() {
+int main(int argc, char* argv[]) {
+    // 用于调参
+    if (argc == 2) {
+        double val = strtod(argv[1], nullptr);
+        // XXX = val;
+    }
+    else { //默认值
+        // XXX = DEFAULT_VAL;
+    }
     // 清除
     setbuf(stdout, nullptr);
     setbuf(stderr, nullptr);
