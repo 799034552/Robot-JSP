@@ -17,7 +17,7 @@ int main() {
         get_frame(debug);
         printf("%d\n", frame_id);
         create_urgent(); // 创建紧急任务
-        
+
         for(int i = 0; i < 4; ++i) {
             auto & this_robot = robot_list[i];
             double distance = MAX_NUMBER;
@@ -27,6 +27,8 @@ int main() {
             // 如果一个机器人没事干
             // if (this_robot.action == None) {
             if (this_robot.action == None || this_robot.action == sell || this_robot.action == buy) {
+                // if (frame_id <= 51 && (this_robot.action == sell || this_robot.action == buy))
+                //     continue;
                 // 先解除当前机器人的所有占用
                 if (this_robot.action == buy) {
                     wb_list[this_robot.forward_id].output_occupy_by = -1;
@@ -41,9 +43,17 @@ int main() {
                 if (this_robot.carry_id == 0) {
                     // 找出能够拿东西的最近工作台
                     for(int j = 0; j < wb_list.size(); ++j) {
-                        if (wb_list[j].output_occupy_by != -1 || !wb_list[j].output_box) continue; // 被占用或者生产格没东西就下一个
-                        if (!can_somebody_put(wb_list[j].type)) continue; // 要拿的东西是否能被消化
-                        double tmp = cal_distance(this_robot.pos, wb_list[j].pos);
+                        // cerr<< frame_id<<endl;
+                        if (frame_id < 0) {
+                            if (wb_list[j].output_occupy_by != -1 || wb_list[j].left_time == -1) continue; // 被占用或者没有在生产就下一个
+                        }
+                        else {
+                            if (wb_list[j].output_occupy_by != -1 || !wb_list[j].output_box) continue; // 被占用或者生产格没东西就下一个
+                        }
+                        // if (wb_list[j].output_occupy_by != -1 || wb_list[j].left_time == -1) continue; // 被占用或者没有在生产就下一个
+                        if (!can_somebody_put(wb_list[j].type, this_robot.pos, wb_list[j].pos)) continue; // 要拿的东西是否能被消化
+                        double tmp = cal_distance(this_robot.pos, wb_list[j].pos) + add_distance(j);
+                        
                         if (distance > tmp) {
                             forward_id = j;
                             distance = tmp;
@@ -82,20 +92,17 @@ int main() {
                     //如果找到了
                     if (forward_id != -1) {
                         // 偏好选择
-                        // for (auto wb_i: favourite_map[wb_list[forward_id].type]) {
-                        //     // cerr<<wb_list[favourite_map[wb_list[forward_id].type][0]].pos.first
-                        //     // <<" "
-                        //     // <<wb_list[favourite_map[wb_list[forward_id].type][0]].pos.second
-                        //     // <<endl;
-                        //     // exit(0);
-                        //     auto & wb = wb_list[wb_i];
-                        //     if((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id)) continue; //被占用或者输入格满就下一个
-                        //     // 出现同类型的没有在生产的偏好工作台
-                        //     if (wb.left_time < -1 && (wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6) > 1)) {
-                        //         forward_id = wb.id;
-                        //     }
-                        //     break;
-                        // }
+                        for (auto wb_i: favourite_map[wb_list[forward_id].type]) {
+                            auto & wb = wb_list[wb_i];
+                            if((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id)) continue; //被占用或者输入格满就下一个
+                            // 出现同类型的没有在生产的7号工作台，并且工作台与当前目标距离差值小
+                            if (wb.left_time < 300 
+                                && (wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6) > 1) 
+                                && cal_distance(wb_list[wb.id].pos, wb_list[forward_id].pos) < 10) {
+                                forward_id = wb.id;
+                            }
+                            break;
+                        }
                         this_robot.action = sell;
                         this_robot.forward_id = forward_id;
                         wb_list[forward_id].input_occupy_by[this_robot.carry_id] = i;
@@ -109,8 +116,11 @@ int main() {
                     if (forward_id != -1) {
                         //如果任务不相同
                         if (back_forward_id != forward_id) {
-                            // 以前任务有人能消化就恢复
-                            if(can_somebody_put(wb_list[back_forward_id].type)) {
+                            auto diff_dis = cal_distance(wb_list[back_forward_id].pos, wb_list[forward_id].pos);
+                            // if (frame_id > 6000)
+                            //     diff_dis = 100;
+                            // 以前任务有人能消化就恢复 并且距离相差太近就恢复
+                            if(can_somebody_put(wb_list[back_forward_id].type, this_robot.pos, wb_list[back_forward_id].pos)) {
                                 if (this_robot.action == buy) {
                                     wb_list[this_robot.forward_id].output_occupy_by = -1;
                                     wb_list[back_forward_id].output_occupy_by = this_robot.id;
@@ -130,12 +140,10 @@ int main() {
                         this_robot.action = None;
                     }
                 }
-
             }
         }
         for(int i = 0; i < 4; ++i) {
             auto & this_robot = robot_list[i];
-            // 机器人有事干
             if (this_robot.action == buy || this_robot.action == sell)
             {
                 // 还没有到达目的地
@@ -145,6 +153,8 @@ int main() {
                     // 判断机器人旋转方向
                     auto angle = cal_angle(this_robot.pos, wb_list[this_robot.forward_id].pos);
                     std::pair <double,double> control = this_robot.Robot_controle(distance,angle);
+                    // cerr<<this_robot.id<<"  "<<frame_id<<endl;
+                    // exit(0);
                     printf("forward %d %f\n", this_robot.id, control.first);
                     printf("rotate %d %f\n", this_robot.id, control.second);
                 }
@@ -160,6 +170,9 @@ int main() {
                         printf("sell %d\n", this_robot.id);
                         wb_list[this_robot.forward_id].input_occupy_by[this_robot.carry_id] = -1;
                     }
+                    // for(auto &urgent_task: urgent_list) {
+                    //     for(int k = 0; k < urg)
+                    // }
                         
                     // 恢复自身状态与目标工作台占用
                     this_robot.action = None;
@@ -172,9 +185,9 @@ int main() {
                 printf("forward %d %f\n", this_robot.id, 0.0);
                 printf("rotate %d %f\n", this_robot.id, 0.0);
             }
+
         }
         printf("OK\n");
-
         if (frame_id == 9000)
             break;
     }
