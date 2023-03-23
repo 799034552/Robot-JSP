@@ -143,11 +143,18 @@ double cal_angle(pair<double, double> start, pair<double, double> end) {
     return atan2(y, x);
 }
 
-bool can_somebody_put(int pr_type) {
+bool can_somebody_put(int pr_type, pair<double, double> robot_pos, pair<double, double> wb_pos) {
     for (auto &wb_type: product_to_sell[pr_type]) {
         for(auto &wb_i : type_to_wb[wb_type]) {
-            if (!wb_list[wb_i].get_input_box_item(pr_type) && wb_list[wb_i].input_occupy_by[pr_type] == -1)
-                return true;
+            if (!wb_list[wb_i].get_input_box_item(pr_type) && wb_list[wb_i].input_occupy_by[pr_type] == -1) {
+                // 计算需要消耗的时间
+                auto d1 = cal_distance(robot_pos, wb_pos);
+                auto d2 = cal_distance(wb_pos, wb_list[wb_i].pos);
+                auto total_frame = (d1 + d2) / 5.5 * 50;
+                if (total_frame < 9000 - frame_id)
+                    return true;
+            }
+                
             // if (!wb_list[wb_i].get_input_box_item(pr_type))
             //     return true;
         }
@@ -236,5 +243,43 @@ void create_urgent() {
             }
         }
     }
+}
+
+double add_distance(int wb_i) {
+    return 0;
+    // return 0;
+    // if (frame_id > 8282)
+    //     return 0;
+    auto x = frame_id;
+    auto &wb = wb_list[wb_i];
+    switch (wb.type)
+    {
+    case 1:
+    case 2:
+    case 3:
+        if (frame_id > 7500) {
+            // http://tools.jb51.net/jisuanqi/create_fun
+            // 7500, 2
+            // 7800, 8
+            // 8000, 12
+            // 8500, 20
+            // 8700, 40
+            // 9000, 70
+            return  -2.2504409233607092e-13*x*x*x*x*x+9.235449761589254e-9*x*x*x*x-0.00015139988756175988*x*x*x+1.2393479242755483*x*x-5066.0809834156535*x+8272977.739510031;
+        }
+        break;
+    case 4:
+    case 5:
+    case 6:
+        if (frame_id > 7500) {
+            // 7500, 0
+            // 8000, 5
+            // 8500, 15
+            // 9000, 30
+            return  -3.6271869860450264e-22*x*x*x+0.000010000000000008898*x*x-0.1450000000000725*x+525.0000000001965;
+        }
+        break;
+    }
+    return 0;
 }
 
