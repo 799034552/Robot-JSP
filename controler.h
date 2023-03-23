@@ -47,6 +47,7 @@ extern unordered_map<int, vector<int>> wb_can_put;
 extern unordered_map<int, vector<int>> product_to_sell;
 extern unordered_map<int, vector<int>> favourite_map;
 extern bool debug;
+extern vector<Urgent_task*> urgent_list;
 
 
 
@@ -65,12 +66,12 @@ inline double cal_distance(pair<double, double> a, pair<double, double> b) {
 }
 // 获取方向
 double cal_angle(pair<double, double> start, pair<double, double> end);
-// 查看他是否能够被笑话
-bool can_somebody_put(int pr_type);
+// 查看他是否能够被消化
+bool can_somebody_put(int pr_type, pair<double, double> robot_pos, pair<double, double> wb_pos);
 // 初始化
 void init();
 void create_urgent();
+double add_distance(int wb_i);
 
 #endif
-
 
