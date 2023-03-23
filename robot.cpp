@@ -5,6 +5,7 @@
 
 using namespace std;
 int tt = 0;
+bool temp = false;
 /// @brief 计算机器人离哪面墙最近
 /// @param pos 机器人坐标
 /// @param face 机器人朝向
@@ -199,31 +200,50 @@ double Robot::robot_speed_pid(double distance)
 /// @brief 计算吸引力
 std::pair<double, double> cal_attraction(std::pair<double, double> current_pos, std::pair<double, double> target_pos, double k)
 {
+    // https://blog.csdn.net/junshen1314/article/details/50472410
     std::pair<double, double> result;
     result.first = k * (target_pos.first - current_pos.first);
     result.second = k * (target_pos.second - current_pos.second);
+    double distance = cal_distance(current_pos,target_pos);
+    if(distance>14){
+        result.first = result.first/distance*14;
+        result.second = result.second/distance*14;
+    }
     return result;
 }
 
 /// @brief 计算斥力
-std::pair<double, double> cal_repulsion(std::pair<double, double> current_pos, std::pair<double, double> obstacle_pos, double k, double p0)
+std::pair<double, double> cal_repulsion(std::pair<double, double> current_pos, std::pair<double, double> obstacle_pos, std::pair<double, double> target_pos, double k, double p0)
 {
-    std::pair<double, double> result;
+    // https://zhuanlan.zhihu.com/p/548241778
+    std::pair<double, double> f1;
+    std::pair<double, double> f2;
+
     double distance = cal_distance(current_pos, obstacle_pos);
+    double CT_distance = cal_distance(current_pos, obstacle_pos);
     if (distance > p0)
-        return {0,0};
+        return {0, 0};
+
     double scale = k * (1 / distance - 1 / p0);
     scale /= distance * distance;
-    result.first = scale * (current_pos.first - obstacle_pos.first) / distance;
-    result.second = scale * (current_pos.second - obstacle_pos.second) / distance;
-    return result;
+    f1.first = scale * (current_pos.first - obstacle_pos.first) / distance;
+    f1.second = scale * (current_pos.second - obstacle_pos.second) / distance;
+
+    // f1.first *= CT_distance * CT_distance;
+    // f1.second *= CT_distance * CT_distance;
+    // scale = k * (1 / distance - 1 / p0) * (1 / distance - 1 / p0);
+    // f2.first = scale * (target_pos.first - current_pos.first);
+    // f2.second = scale * (target_pos.second - current_pos.second);
+
+    return {f1.first, f1.second};
+    // return {f1.first + f2.first, f1.second + f2.second};
 }
 
 std::pair<double, double> Robot::power_field()
 {
     static double k1 = 4;                                                 // 引力场参数
     static double k2 = 60;                                                // 斥力场参数
-    static double p0 = 8;                                                 // 斥力场产生作用距离
+    static double p0 = 3;                                                 // 斥力场产生作用距离
     static double wk = 20;                                                // 墙壁斥力场scale
     static double wp = 2;                                                 // 墙壁斥力场产生作用距离
     std::pair<double, double> target_pos = wb_list[this->forward_id].pos; // 目标位置
@@ -235,17 +255,32 @@ std::pair<double, double> Robot::power_field()
     // 计算吸引力
     force.push_back(cal_attraction(current_pos, target_pos, k1));
     // 计算机器人斥力
+    bool test = false;
     for (int i = 0; i < robot_list.size(); ++i)
     {
         if (this->id == i)
             continue;
-        force.push_back(cal_repulsion(current_pos, robot_list[i].pos, k2, p0));
+
+        std::pair<double, double> repulsion = cal_repulsion(current_pos, robot_list[i].pos, target_pos, k2, p0);
+        // id大的机器人避让id小的
+        if (this->forward_id == robot_list[i].forward_id && this->id < robot_list[i].id)
+        {
+            repulsion.first *= 0;
+            repulsion.second *= 0;
+        }
+        if (abs(this->face) + abs(robot_list[i].face) >= PI / 180 * 160 && abs(this->face) + abs(robot_list[i].face) <= PI / 180 * 200)
+        {
+            test = true;
+            repulsion.first = repulsion.first * cos(PI / 6) - repulsion.second * sin(PI / 6);
+            repulsion.second = repulsion.first * sin(PI / 6) + repulsion.second * cos(PI / 6);
+        }
+        force.push_back(repulsion);
     }
     // 计算墙壁斥力
-    force.push_back(cal_repulsion(current_pos, {current_pos.first, 0}, wk, wp));
-    force.push_back(cal_repulsion(current_pos, {current_pos.first, 50}, wk, wp));
-    force.push_back(cal_repulsion(current_pos, {0, current_pos.second}, wk, wp));
-    force.push_back(cal_repulsion(current_pos, {50, current_pos.second}, wk, wp));
+    // force.push_back(cal_repulsion(current_pos, {current_pos.first, 0}, wk, wp));
+    // force.push_back(cal_repulsion(current_pos, {current_pos.first, 50}, wk, wp));
+    // force.push_back(cal_repulsion(current_pos, {0, current_pos.second}, wk, wp));
+    // force.push_back(cal_repulsion(current_pos, {50, current_pos.second}, wk, wp));
     // 计算合力
     for (int i = 0; i < force.size(); ++i)
     {
@@ -253,17 +288,19 @@ std::pair<double, double> Robot::power_field()
         net_force.second += force[i].second;
     }
 
-    // if ((this->id == 1) && frame_id > 680 && frame_id < 700)
-    // {
-    //     cerr << frame_id << " " << this->id << endl;
-    //     for (int i = 0; i < force.size(); ++i)
-    //     {
-    //         cerr << i << " " << force[i].first << ", " << force[i].second << ", " << length(force[i]) << endl;
-    //     }
-    //     cerr << "net_force: " << net_force.first << ", " << net_force.second << ", " << length(net_force) << endl;
-    //     cerr << "pos: " << this->pos.first << ", " << this->pos.second << endl;
-    //     // cerr << "----------------------------------->" << endl;
-    // }
+    if ((this->id == 0||this->id == 1) && frame_id > 7950 && frame_id < 7980)
+    {
+        temp = true;
+        cerr << frame_id << " " << this->id << ",   "<<test<<endl;
+        for (int i = 0; i < force.size(); ++i)
+        {
+            cerr << i << " " << force[i].first << ", " << force[i].second << ", " << length(force[i]) << endl;
+        }
+        cerr << "net_force: " << net_force.first << ", " << net_force.second << ", " << length(net_force) << endl;
+        cerr << "pos: " << this->pos.first << ", " << this->pos.second << endl;
+        cerr << "face: " << this->face<< endl;
+        cerr << "----------------------------------->" << endl;
+    }
 
     return net_force;
 }
