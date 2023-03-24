@@ -99,7 +99,7 @@ std::pair<double, double> rotate_vector(std::pair<double, double> vec, double a)
     return result;
 }
 
-std::pair<double, double> Robot::Robot_controle(double distance, double angle)
+std::pair<double, double> Robot::Robot_control(double distance, double angle)
 {
     static double kp = 20;    //  转弯p参数
     static double kd = 0.01;  //  转弯d参数
@@ -158,18 +158,18 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
     //     forward_speed = 6.0;
     // }
     // tt++;
-    if ((this->id == 1) && frame_id > 1 && frame_id < 80)
-    {
-        // cerr << frame_id << endl;
-        cerr << "set forward speed: " << forward_speed << ", " << traction << " set rotate speed: " << rotate_speed << endl;
-        cerr << "actual forward speed: " << length(this->linear_speed) << " actual rotate speed: " << this->rotate_speed << endl;
-        // cerr << "distance o to wall:" << dis << " radius:" << r;
-        // cerr << this->linear_speed.first << ", " << this->linear_speed.second;
-        cerr << distance << ", " << angle_diff << endl;
-        // cerr << robot_wall_re.first << " " << robot_wall_re.second << endl;
-        // cerr << this->face << " " << this->pos.first << " " << this->pos.second << endl;
-        cerr << "************************************" << endl;
-    }
+    // if ((this->id == 1) && frame_id > 1 && frame_id < 80)
+    // {
+    //     // cerr << frame_id << endl;
+    //     cerr << "set forward speed: " << forward_speed << ", " << traction << " set rotate speed: " << rotate_speed << endl;
+    //     cerr << "actual forward speed: " << length(this->linear_speed) << " actual rotate speed: " << this->rotate_speed << endl;
+    //     // cerr << "distance o to wall:" << dis << " radius:" << r;
+    //     // cerr << this->linear_speed.first << ", " << this->linear_speed.second;
+    //     cerr << distance << ", " << angle_diff << endl;
+    //     // cerr << robot_wall_re.first << " " << robot_wall_re.second << endl;
+    //     // cerr << this->face << " " << this->pos.first << " " << this->pos.second << endl;
+    //     cerr << "************************************" << endl;
+    // }
 
     std::pair<double, double> result(forward_speed, rotate_speed);
     return result;
@@ -338,8 +338,7 @@ std::pair<double, double> Robot::power_field()
 // sqrt((u(1)-u(4))^2+(u(2)-u(5))^2)*cos(atan2(u(5)-u(2),u(4)-u(1))-pi/2-u(3))
 
 // -sqrt((u(1)-u(4))^2+(u(2)-u(5))^2)*sin(atan2(u(5)-u(2),u(4)-u(1))-pi/2-u(3))
-
-std::pair<double, double> Robot::Robot_controle(std::pair<double, double> target_pos, double target_theta)
+std::pair<double, double> Robot::Robot_pid_control(std::pair<double, double> target_pos, double target_theta)
 {
     static double kp_r = -4;
     static double kd_r = -2.5;
@@ -354,5 +353,25 @@ std::pair<double, double> Robot::Robot_controle(std::pair<double, double> target
     double speed_p = -distance * sin(atan2(current_pos.second - target_pos.second, current_pos.first - target_pos.first) - PI / 2 - target_theta);
     double speed = kp_f * speed_p; // 前向 p 控制
 
-    return {speed,rotate_rate};
+    // if ((this->id == 1) && frame_id > 1 && frame_id < 70)
+    // {
+    //     cerr << frame_id << " " << this->id << endl;
+    //     cerr << "target pos: " << target_pos.first << ", " << target_pos.second << endl;
+    //     cerr << "current pos: " << current_pos.first << ", " << current_pos.second << endl;
+    //     cerr << "current theta: " << this->face << ", target theta: " << target_theta << endl;
+    //     cerr << "speed" << speed << ", rotate rate: " << rotate_rate << endl;
+    //     cerr << distance << ", " << atan2(current_pos.second - target_pos.second, current_pos.first - target_pos.first) << ", " << sin(atan2(current_pos.second - target_pos.second, current_pos.first - target_pos.first) - PI / 2 - target_theta) << endl;
+    //     cerr << "----------------------------------->" << endl;
+    // }
+
+    return {speed, rotate_rate};
+}
+
+std::pair<double, double> Robot::Robot_control(std::pair<double,double>target_pos)
+{
+    // 路劲规划
+    // this->power_field();
+    // pid 控制
+    // this->Robot_pid_control();
+    return {0.0,0.0};
 }
