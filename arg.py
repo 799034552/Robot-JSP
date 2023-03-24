@@ -1,57 +1,85 @@
 import os
+import time
 import numpy as np
+import heapq
 
-st = 6.0
-ed = 8.0
-num = 5
-st1 = 6.0
-ed1 = 8.0
-num1 = 5
-st2 = 6.0
-ed2 = 8.0
-num2 = 5
+# np.linspace(st,ed,num) (下界，上界，步数)
+grid = [
+    (1, 2, 2),
+    (3, 4, 3),
+    (5, 6, 4),
+        ]
+maps = [5, 6, 7, 8]
 topk = 3
-maps = [1, 2, 3, 4]
+ans = []
 
-vals = np.linspace(st, ed, num)
-vals1 = np.linspace(st1, ed1, num1)
+def grid_search(cur_val:list, depth:int):
 
-vals2 = np.linspace(st2, ed2, num2)
-
-# print("maps:", maps, "vals:", vals)
-
-def run_one():
-    os.system("Robot.exe \"build/main.exe\" -f -l WARN -m ./maps/1.txt")
-    os.system("Robot.exe \"build/main.exe\" -f -l WARN -m ./maps/2.txt")
-    os.system("Robot.exe \"build/main.exe\" -f -l WARN -m ./maps/3.txt")
-    os.system("Robot.exe \"build/main.exe\" -f -l WARN -m ./maps/4.txt")
-
-def best_k():
-    ans = []
-    for val in vals:
+    if depth == len(grid):
         scores = 0
         for map_idx in maps:
-            cmd = "Robot.exe \"build/main.exe " + str(val) + "\" -f -l WARN -m ./maps/" + str(map_idx) + ".txt"
+            cmd = "Robot.exe -m ./maps/" + str(map_idx) + ".txt \"build/main.exe" 
+            for val in cur_val:
+                cmd += " " + str(val)
+            cmd += "\" -f -l WARN"
             f = os.popen(cmd)
             out = f.read().strip()
-
+            f.close()
             score = int(eval(out)['score'])
             scores += score
-        ans.append(scores)
 
-    res = np.argsort(ans)
+        if len(ans) == topk:
+            heapq.heappushpop(ans, (scores, cur_val.copy()))
+        else:
+            heapq.heappush(ans, (scores, cur_val.copy()))
+        return
 
-    for i in range(topk):
-        idx = res[-(i+1)]
-        print("val:", vals[idx], "| all-scores:", ans[idx])
+    vals = np.linspace(*grid[depth])
+    for val in vals:
+        cur_val.append(val)
+        grid_search(cur_val, depth+1)
+        cur_val.pop()
+    return
 
-best_k()
-# run_one()
+def run_one():
+    scores = 0
+    for map_idx in maps:
+        cmd = "Robot.exe -m ./maps/" + str(map_idx) + ".txt \"build/main.exe\" -f -l WARN"
+        f = os.popen(cmd)
+        out = f.read().strip()
+        print(out)
+        f.close()
+        score = int(eval(out)['score'])
+        scores += score
+    print("default total:", scores)
+    return
 
+def main():
+    t0 = time.time()
+    run_one()
+    # exit()
+    t = time.time() - t0
+    print("one cost:", t)
+
+    num = 1
+    for _ in grid:
+        num *= _[2]
+    print("search nums:", num, "total cost:", num*t)
+
+    # t = time.time()
+    grid_search([], 0)
+    ans.sort(reverse=True)
+    for res in ans:
+        print(res)
+    # print("total cost:", time.time()-t)
+    return
+
+if __name__ == "__main__":
+    main()
 
 # int main(int argc, char* argv[]) {
 #     // 用于调参
-#     if (argc == 2) {
+#     if (argc > 1) {
 #         double val = strtod(argv[1], nullptr);
 #         // XXX = val;
 #     }
