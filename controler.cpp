@@ -282,4 +282,3 @@ double add_distance(int wb_i) {
     }
     return 0;
 }
-
