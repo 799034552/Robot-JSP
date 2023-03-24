@@ -40,4 +40,9 @@ public:
 
     std::pair<double, double> power_field();
 };
+
+extern double power_k1;
+extern double power_k2;
+extern double power_p0;
+
 #endif

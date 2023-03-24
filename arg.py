@@ -4,10 +4,20 @@ import numpy as np
 st = 6.0
 ed = 8.0
 num = 5
+st1 = 6.0
+ed1 = 8.0
+num1 = 5
+st2 = 6.0
+ed2 = 8.0
+num2 = 5
 topk = 3
 maps = [1, 2, 3, 4]
 
 vals = np.linspace(st, ed, num)
+vals1 = np.linspace(st1, ed1, num1)
+
+vals2 = np.linspace(st2, ed2, num2)
+
 # print("maps:", maps, "vals:", vals)
 
 def run_one():

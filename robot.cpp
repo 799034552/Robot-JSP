@@ -4,8 +4,10 @@
 #include <cmath>
 
 using namespace std;
-int tt = 0;
-bool temp = false;
+double power_k1 = 4;
+double power_k2 = 15;
+double power_p0 = 5;
+
 /// @brief 计算机器人离哪面墙最近
 /// @param pos 机器人坐标
 /// @param face 机器人朝向
@@ -105,7 +107,7 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
     static double k2 = 2;     //  前进速度参数，用距离工作台的距离控制速度
     static double k3 = 1;     //  前进速度参数,用离墙的距离控制速度
     static double ksp = 2;    //  势力场控制速度p参数
-    static double ksd = 0.03; //  势力场控制速度d参数
+    static double ksd = 0.04; //  势力场控制速度d参数
 
     static double rotate_radius = 2.18;          // 最大转弯半径
     static double rotate_angle_threshold = 0.4;  // 角度大于此阈值，考虑减速
@@ -156,18 +158,18 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
     //     forward_speed = 6.0;
     // }
 // tt++;
-//     if ((this->id == 1) && frame_id > 1000 && frame_id < 8000 &&tt%400==0)
-//     {
-//         // cerr << frame_id << endl;
-//         cerr << "set forward speed: " << forward_speed << ", " << traction << " set rotate speed: " << rotate_speed << endl;
-//         cerr << "actual forward speed: " << length(this->linear_speed) << " actual rotate speed: " << this->rotate_speed << endl;
-//         // cerr << "distance o to wall:" << dis << " radius:" << r;
-//         // cerr << this->linear_speed.first << ", " << this->linear_speed.second;
-//         cerr << distance << ", " << angle_diff << endl;
-//         // cerr << robot_wall_re.first << " " << robot_wall_re.second << endl;
-//         // cerr << this->face << " " << this->pos.first << " " << this->pos.second << endl;
-//         cerr << "************************************" << endl;
-//     }
+    if ((this->id == 1) && frame_id > 1 && frame_id < 80)
+    {
+        // cerr << frame_id << endl;
+        cerr << "set forward speed: " << forward_speed << ", " << traction << " set rotate speed: " << rotate_speed << endl;
+        cerr << "actual forward speed: " << length(this->linear_speed) << " actual rotate speed: " << this->rotate_speed << endl;
+        // cerr << "distance o to wall:" << dis << " radius:" << r;
+        // cerr << this->linear_speed.first << ", " << this->linear_speed.second;
+        cerr << distance << ", " << angle_diff << endl;
+        // cerr << robot_wall_re.first << " " << robot_wall_re.second << endl;
+        // cerr << this->face << " " << this->pos.first << " " << this->pos.second << endl;
+        cerr << "************************************" << endl;
+    }
 
     std::pair<double, double> result(forward_speed, rotate_speed);
     return result;
@@ -254,6 +256,9 @@ std::pair<double, double> Robot::power_field()
     static double k1 = 4;                                                 // 引力场参数
     static double k2 = 15;                                                // 斥力场参数
     static double p0 = 5;                                                 // 斥力场产生作用距离
+    // static double k1 = power_k1;
+    // static double k2 = power_k2;
+    // static double p0 = power_p0;
     static double wk = 20;                                                // 墙壁斥力场scale
     static double wp = 2;                                                 // 墙壁斥力场产生作用距离
     std::pair<double, double> target_pos = wb_list[this->forward_id].pos; // 目标位置
