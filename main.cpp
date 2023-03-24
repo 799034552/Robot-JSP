@@ -7,7 +7,7 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     // 用于调参
-    if (argc == 2)
+    if (argc > 1)
     {
         // double val = strtod(argv[1], nullptr);
         power_k1 = strtod(argv[1], nullptr);
