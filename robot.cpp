@@ -117,19 +117,19 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
     
 
     // 碰撞控制
-    for(auto &rb: robot_list) {
-        if (rb.id != id && cal_distance(pos, rb.pos) < 5) {
-            auto t = cal_hit();
-            auto rotate_diff = cal_rotate_diff(t.second, this->face);
-            forward_speed = t.first * 2;
-            rotate_speed = rotate_diff * 20;
-            break;
-        }
-    }
-    auto t = cal_hit();
-    rotate_diff = cal_rotate_diff(t.second, this->face);
-    forward_speed = t.first * 4;
-    rotate_speed = rotate_diff * 20;
+    // for(auto &rb: robot_list) {
+    //     if (rb.id != id && cal_distance(pos, rb.pos) < 5) {
+    //         auto t = cal_hit();
+    //         auto rotate_diff = cal_rotate_diff(t.second, this->face);
+    //         forward_speed = t.first * 2;
+    //         rotate_speed = rotate_diff * 20;
+    //         break;
+    //     }
+    // }
+    // auto t = cal_hit();
+    // rotate_diff = cal_rotate_diff(t.second, this->face);
+    // forward_speed = t.first * 4;
+    // rotate_speed = rotate_diff * 20;
 
     // 碰撞控制
     // for(auto &rb: robot_list) {
