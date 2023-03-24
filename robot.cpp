@@ -157,7 +157,7 @@ std::pair<double, double> Robot::Robot_controle(double distance, double angle)
     // {
     //     forward_speed = 6.0;
     // }
-// tt++;
+    // tt++;
     if ((this->id == 1) && frame_id > 1 && frame_id < 80)
     {
         // cerr << frame_id << endl;
@@ -253,9 +253,9 @@ std::pair<double, double> cal_repulsion(std::pair<double, double> current_pos, s
 
 std::pair<double, double> Robot::power_field()
 {
-    static double k1 = 4;                                                 // 引力场参数
-    static double k2 = 15;                                                // 斥力场参数
-    static double p0 = 5;                                                 // 斥力场产生作用距离
+    static double k1 = 4;  // 引力场参数
+    static double k2 = 15; // 斥力场参数
+    static double p0 = 5;  // 斥力场产生作用距离
     // static double k1 = power_k1;
     // static double k2 = power_k2;
     // static double p0 = power_p0;
@@ -334,4 +334,25 @@ std::pair<double, double> Robot::power_field()
     // }
 
     return net_force;
+}
+// sqrt((u(1)-u(4))^2+(u(2)-u(5))^2)*cos(atan2(u(5)-u(2),u(4)-u(1))-pi/2-u(3))
+
+// -sqrt((u(1)-u(4))^2+(u(2)-u(5))^2)*sin(atan2(u(5)-u(2),u(4)-u(1))-pi/2-u(3))
+
+std::pair<double, double> Robot::Robot_controle(std::pair<double, double> target_pos, double target_theta)
+{
+    static double kp_r = -4;
+    static double kd_r = -2.5;
+    static double kp_f = -5;
+
+    pair<double, double> current_pos = this->pos;
+    double current_theta = this->face;
+    double distance = sqrt(pow(target_pos.first - current_pos.first, 2) + pow(target_pos.second - current_pos.second, 2));
+
+    double theta_p = distance * cos(atan2(current_pos.second - target_pos.second, current_pos.first - target_pos.first) - PI / 2 - target_theta);
+    double rotate_rate = kp_r * theta_p + kd_r * (current_theta - target_theta); // 法向 pd 控制
+    double speed_p = -distance * sin(atan2(current_pos.second - target_pos.second, current_pos.first - target_pos.first) - PI / 2 - target_theta);
+    double speed = kp_f * speed_p; // 前向 p 控制
+
+    return {speed,rotate_rate};
 }
