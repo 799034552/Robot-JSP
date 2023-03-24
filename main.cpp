@@ -2,6 +2,7 @@
 #include <string.h>
 #include <limits.h>
 #include "controler.h"
+#include "robot.h"
 using namespace std;
 
 int main() {
@@ -17,13 +18,40 @@ int main() {
         get_frame(debug);
         printf("%d\n", frame_id);
         create_urgent(); // 创建紧急任务
+        
 
         for(int i = 0; i < 4; ++i) {
+            
             auto & this_robot = robot_list[i];
             double distance = MAX_NUMBER;
             int forward_id = -1; // 当前机器人目的地id，-1表示没有
             int favourite_type = -1; // 当前机器人偏好去的工作台类型
             int back_forward_id = -1; //暂时保存机器人的前往的目的地
+            // double aaaa,bbb;
+            // if (frame_id == 144 && this_robot.id == 0) {
+            //     cerr<<this_robot.linear_speed.first<<" "
+            //     <<this_robot.linear_speed.second<<" "
+            //     <<this_robot.face<<" "
+            //     <<this_robot.pos.first<<" "
+            //     <<this_robot.pos.second<<" "
+            //     <<this_robot.rotate_speed<<" "<<endl
+            //     <<atan2(this_robot.linear_speed.second, this_robot.linear_speed.first)<<endl
+            //     <<cal_distance(this_robot.linear_speed, {0,0})<<" " <<get_true_linear(this_robot.linear_speed, this_robot.face)<<endl<<endl;
+            //     aaaa = this_robot.pos.first;
+            //     bbb =this_robot.pos.second;
+            // }
+            // if (frame_id == 145 && this_robot.id == 0) {
+            //     cerr<<this_robot.linear_speed.first<<" "
+            //     <<this_robot.linear_speed.second<<" "
+            //     <<this_robot.face<<" "
+            //     <<this_robot.pos.first<<" "
+            //     <<this_robot.pos.second<<" "
+            //     <<this_robot.rotate_speed<<" "<<endl
+            //     <<atan2(this_robot.linear_speed.second, this_robot.linear_speed.first)<<endl
+            //     <<atan2(this_robot.pos.second - bbb, this_robot.pos.first - aaaa)<<endl
+            //     <<cal_distance(this_robot.linear_speed, {0,0})<<" " <<get_true_linear(this_robot.linear_speed, this_robot.face)<<endl<<endl;
+            //     exit(0);
+            // }
             // 如果一个机器人没事干
             // if (this_robot.action == None) {
             if (this_robot.action == None || this_robot.action == sell || this_robot.action == buy) {

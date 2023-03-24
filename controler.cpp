@@ -35,8 +35,6 @@ unordered_map<int, vector<int>> wb_can_put {
 // 紧急通知列表，快来取我列表
 vector<Urgent_task*> urgent_list;
 
-
-
 bool readUntilOK(char* t) {
     while (fgets(t, sizeof t, stdin)) {
         if (t[0] == 'O' && t[1] == 'K') {
