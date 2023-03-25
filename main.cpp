@@ -31,7 +31,10 @@ int main(int argc, char *argv[])
     {
         get_frame(debug);
         printf("%d\n", frame_id);
-        create_urgent(); // 创建紧急任务
+        // create_urgent(); // 创建紧急任务
+        shared_ptr<WorldStatus> cur_status = make_shared<WorldStatus>(wb_list, robot_list, frame_id, money);
+        build_decision_tree(cur_status);
+
 
         for(int i = 0; i < 4; ++i) {
             auto & this_robot = robot_list[i];
@@ -187,11 +190,24 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        // if (frame_id == 49) 
+        //     cerr<<frame_id<<" "<<wb_list[type_to_wb[1][0]].left_time<<endl;
+        // if (frame_id == 50) 
+        //     cerr<<frame_id<<" "<<wb_list[type_to_wb[1][0]].left_time<<endl;
+        // if (frame_id == 51) 
+        //     cerr<<frame_id<<" "<<wb_list[type_to_wb[1][0]].left_time<<endl;
+        // if (frame_id == 52) 
+        //     exit(0);
         for (int i = 0; i < 4; ++i)
         {
             auto &this_robot = robot_list[i];
             if (this_robot.action == buy || this_robot.action == sell)
             {
+                // shared_ptr<WorldStatus> a = make_shared<WorldStatus>(wb_list, robot_list, frame_id, money);
+                // a->show();
+                // auto b = cal_next_statue(a, 305);
+                // b->show();
+                // exit(0);
                 // 还没有到达目的地
                 if (this_robot.workbrench_id != this_robot.forward_id)
                 {
@@ -214,6 +230,7 @@ int main(int argc, char *argv[])
                     {
                         printf("buy %d\n", this_robot.id);
                         wb_list[this_robot.forward_id].output_occupy_by = -1;
+                        this_robot.buy_frame = frame_id;
                     }
 
                     else if (this_robot.action == sell)

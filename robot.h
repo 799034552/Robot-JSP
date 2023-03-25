@@ -24,6 +24,7 @@ public:
     int id;
     std::pair<double, double> pos;
     int workbrench_id;
+    int buy_frame;
     int carry_id;
     int time_conf;
     int hit_conf;

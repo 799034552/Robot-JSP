@@ -1,6 +1,7 @@
 #include "controler.h"
 using namespace std;
 
+const double normal_speed = 5.2;
 char tmp_txt[1024];
 vector<Robot> robot_list;
 vector<Workbench> wb_list;
@@ -10,6 +11,28 @@ bool debug = false;
 vector<vector<int>> type_to_wb(10, vector<int>());
 long frame_id;
 int money;
+// 工作台生成时间
+unordered_map<int, int> wb_to_time {
+    {1, 50},
+    {2, 50},
+    {3, 50},
+    {4, 500},
+    {5, 500},
+    {6, 500},
+    {7, 1000},
+    {8, 1},
+    {9, 1},
+};
+// 产品购买与售出价格
+unordered_map<int, pair<int, int>> product_money {
+    {1, pair<int, int>{3000, 6000}},
+    {2, pair<int, int>{4400, 7600}},
+    {3, pair<int, int>{5800, 9200}},
+    {4, pair<int, int>{15400, 22500}},
+    {5, pair<int, int>{17200, 25000}},
+    {6, pair<int, int>{19200, 27500}},
+    {7, pair<int, int>{76000, 105000}},
+};
 // 产品能放到什么工作台
 unordered_map<int, vector<int>> product_to_sell {
     {1, vector<int>{4, 5, 9}},
@@ -113,6 +136,15 @@ void get_frame(bool is_debug) {
     for(int i = 0; i < wb_list.size(); ++i) {
         line_info = get_split_line_text(is_debug);
         wb_list[i].left_time = line_info[3];
+        switch (wb_list[i].type)
+        {
+        case 1:
+        case 2:
+        case 3:
+            if (wb_list[i].left_time == -1)
+                wb_list[i].left_time = 50;
+            break;
+        }
         wb_list[i].input_box = line_info[4];
         wb_list[i].output_box = line_info[5];
     }
@@ -281,4 +313,153 @@ double add_distance(int wb_i) {
         break;
     }
     return 0;
+}
+
+shared_ptr<WorldStatus> cal_next_statue(const shared_ptr<WorldStatus> &cur_status, int dt) {
+    shared_ptr<WorldStatus> next_status = cur_status->duplicate();
+    next_status->frame_id = cur_status->frame_id + dt;
+    unordered_map<int, vector<pair<int, int>>> reach_robot; // 工作台: [[机器人id，到达时间]]
+    for(const auto &rb: cur_status->robot_list) {
+        // 计算到达时间
+        auto reach_time = cal_reach_time(*cur_status, rb.id);
+        if (reach_time == -1) {
+
+        }else if (reach_time > dt) { // 无法到达
+            auto angle = cal_angle(rb.pos,  cur_status->wb_list[rb.forward_id].pos);
+            // 更新下一时刻机器人的位置状态
+            next_status->robot_list[rb.id].pos.first += normal_speed*(dt / 50.0)* cos(angle);
+            next_status->robot_list[rb.id].pos.second += normal_speed*(dt / 50.0)* sin(angle);
+        } else { // 可以到达
+            next_status->robot_list[rb.id].pos = cur_status->wb_list[rb.forward_id].pos;
+            reach_robot[rb.forward_id].emplace_back(rb.id, reach_time);
+        }
+    }
+    for(auto &wb: next_status->wb_list) {
+        if (reach_robot.count(wb.id) == 0) { //当前工作台没有机器人到达
+            change_wb_statue(wb, dt);
+        } 
+        if (reach_robot.count(wb.id) != 0) { //当前工作台有机器人到达
+            int last_reach_time = 0;
+            for(auto & reach_r :reach_robot[wb.id]) {
+                change_wb_statue(wb, reach_r.second - last_reach_time);
+                last_reach_time = reach_r.second;
+                auto & rb = next_status->robot_list[reach_r.first];
+                if (rb.action == buy) { // 机器人想买东西
+                    if (wb.output_box) { // 有东西
+                        wb.output_box = 0;
+                        rb.action = None;
+                        rb.carry_id = wb.type;
+                        rb.forward_id = -1;
+                        rb.buy_frame = cur_status->frame_id + reach_r.second;
+                        next_status->money -= product_money[wb.type].first;
+                    }
+                } else if (rb.action == sell) {
+                    if (!wb.get_input_box_item(rb.carry_id)) { // 输入格没有东西
+                        wb.input_box &= (1 << rb.carry_id);
+                        rb.action = None;
+                        int x = cur_status->frame_id + reach_r.second - rb.buy_frame;
+                        next_status->money += (1 - sqrt(1 - (1-x/9000.0)*(1-x/9000.0)))*(1-0.8)+0.8;
+                        rb.carry_id = -1;
+                        rb.forward_id = -1;
+                    }
+                }
+            }
+            change_wb_statue(wb, dt - last_reach_time);
+        }
+    }
+    return next_status;
+}
+int cal_reach_time(const WorldStatus & cur_status, const int &robot_id) {
+    const auto &rb = cur_status.robot_list[robot_id];
+    if (rb.forward_id == -1) return -1;
+    const auto &wb = cur_status.wb_list[rb.forward_id];
+    auto distance = cal_distance(rb.pos, wb.pos);
+    return distance / normal_speed * 50;
+}
+
+shared_ptr<WorldStatus> WorldStatus::duplicate() {
+    return make_shared<WorldStatus>(*this);
+}
+
+// @brief 改变工作台的状态
+void change_wb_statue(Workbench & wb, int dt) {
+    if (wb.left_time >= 0) { //在生产中
+        if (wb.left_time < dt) { //可以生产完
+            if (wb.output_box) { //如果输出中有东西
+                wb.left_time = 0;
+                return;
+            }
+            wb.output_box = 1;
+            bool flag = true; // 是否有足够的输入
+            for(auto &input: wb_can_put[wb.type]) {
+                if (!wb.get_input_box_item(input))
+                    flag = false;
+            }
+            if (flag) { // 消耗输入
+                wb.left_time = max(wb_to_time[wb.type] - (dt - wb.left_time), 0);
+                wb.input_box = 0;
+            } else { // 没有足够的输入
+                wb.left_time = -1;
+            }
+        } else { //不能生成完
+            wb.left_time -= dt;
+        }
+    }
+}
+
+void WorldStatus::show() {
+    cerr<<endl<<"---------------------------------\n";
+    cerr<<"frame_id:"<<frame_id<<endl;
+    cerr<<"money:"<<money<<endl;
+    cerr<<"robot_id  forward_id  action   carry_id    x    y\n";
+    
+    for(auto&rb:robot_list) {
+        sprintf(tmp_txt, "%5d %5d %5d %5d %6.2f %6.2f\n", rb.id, rb.forward_id, rb.action, rb.carry_id, rb.pos.first, rb.pos.second);
+        cerr<<tmp_txt;
+    }
+    cerr<<"wb_id  wb_type wb_left_time   wb_output    wb_input   x   y\n";
+    for(auto &wb:wb_list) {
+        sprintf(tmp_txt, "%5d %5d %5d %5d %5d %6.2f %6.2f\n", wb.id, wb.type,wb.left_time, wb.output_box, wb.input_box, wb.pos.first, wb.pos.second);
+        cerr<<tmp_txt;
+    }
+    cerr<<endl<<"---------------------------------\n";
+}
+
+void build_decision_tree(shared_ptr<WorldStatus> cur_status, int deep) {
+    shared_ptr<WorldStatus> next_status = nullptr;
+    int min_reach_time = MAX_NUMBER;
+    for(auto &rb: cur_status->robot_list) {
+        min_reach_time = min(cal_reach_time(*cur_status, rb.id), min_reach_time);
+    }
+    if(min_reach_time == -1) //有人没有目标
+        next_status = cur_status;
+    else
+        next_status = cal_next_statue(cur_status, min_reach_time);
+
+    //创建第一层决策树
+    shared_ptr<DecisionTree> decision = make_shared<DecisionTree>();
+    vector<int> no_target_robot;
+    vector<vector<int>> can_choose;
+    // 找到所有没有目标的机器人
+    for(auto &rb: next_status->robot_list) {
+        if (rb.forward_id == -1) { // 这个机器人没有目标
+            no_target_robot.push_back(rb.id);
+            can_choose.emplace_back();
+            for(auto&wb: next_status->wb_list) {
+                if (rb.carry_id == -1) { //这个机器人没有拿东西
+                    if(wb.output_box || wb.left_time != -1) //可以去有输出的地方或者是正在生产的地方
+                        can_choose.back().push_back(wb.id);
+                        
+                } else { // 如果这个机器人拿了东西
+                    if (rb.id != 1 && rb.id != 2 && rb.id != 3) //可以去所有能够放的地方放
+                        can_choose.back().push_back(wb.id);
+                }
+            }
+        }
+    }
+
+    //遍历所有可能的去向，返回一个世界
+    
+    
+
 }
