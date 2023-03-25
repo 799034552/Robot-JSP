@@ -507,7 +507,6 @@ void true_world_choose(shared_ptr<WorldStatus> cur_status, vector<int> &no_targe
 }
 
 double Workbench::reduce_distance() {
-    if (input_frame == -1) return 0;
     switch (type)
     {
     case 1:
@@ -544,7 +543,8 @@ double Workbench::reduce_distance() {
         break;
     case 4:
         if (type == 4) {
-            return (frame_id - input_frame) / 50.0 * 3;
+            // return 1000;
+            return max((frame_id - input_frame) / 50.0 * 4, 20.0);
         }
         if (wb_can_put[type].size() - count == 1) {
             // return (frame_id - input_frame) / 50.0 * 0.9;
