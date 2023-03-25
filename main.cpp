@@ -32,8 +32,20 @@ int main(int argc, char *argv[])
         get_frame(debug);
         printf("%d\n", frame_id);
         // create_urgent(); // 创建紧急任务
-        shared_ptr<WorldStatus> cur_status = make_shared<WorldStatus>(wb_list, robot_list, frame_id, money);
-        build_decision_tree(cur_status);
+        // shared_ptr<WorldStatus> cur_status = make_shared<WorldStatus>(wb_list, robot_list, frame_id, money);
+        // shared_ptr<DecisionTreeNode> cur_world = make_shared<DecisionTreeNode>();
+        // cur_world->one_world = cur_status;
+        // build_decision_tree(cur_world, 2);
+        // cerr<<frame_id<<" "<<cur_world->child.size()<<endl;
+        // if (cur_world->child.size() == 40) {
+        //     debug = true;
+        //     cur_world->one_world->show();
+        //     cur_status = make_shared<WorldStatus>(wb_list, robot_list, frame_id, money);
+        //     cur_world->one_world = cur_status;
+        //     build_decision_tree(cur_world);
+        //     exit(0);
+        // }
+        
 
 
         for(int i = 0; i < 4; ++i) {
