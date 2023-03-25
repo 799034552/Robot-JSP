@@ -31,9 +31,7 @@ int main(int argc, char *argv[])
     {
         get_frame(debug);
         printf("%d\n", frame_id);
-        // create_urgent(); // 创建紧急任务
-        shared_ptr<WorldStatus> cur_status = make_shared<WorldStatus>(wb_list, robot_list, frame_id, money);
-        build_decision_tree(cur_status);
+        // create_urgent(); // 创建紧急任务      
 
 
         for(int i = 0; i < 4; ++i) {

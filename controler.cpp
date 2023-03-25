@@ -344,7 +344,7 @@ shared_ptr<WorldStatus> cal_next_statue(const shared_ptr<WorldStatus> &cur_statu
                 change_wb_statue(wb, reach_r.second - last_reach_time);
                 last_reach_time = reach_r.second;
                 auto & rb = next_status->robot_list[reach_r.first];
-                if (rb.action == buy) { // 机器人想买东西
+                if ( rb.action == buy) { // 机器人想买东西
                     if (wb.output_box) { // 有东西
                         wb.output_box = 0;
                         rb.action = None;
@@ -359,7 +359,7 @@ shared_ptr<WorldStatus> cal_next_statue(const shared_ptr<WorldStatus> &cur_statu
                         rb.action = None;
                         int x = cur_status->frame_id + reach_r.second - rb.buy_frame;
                         next_status->money += (1 - sqrt(1 - (1-x/9000.0)*(1-x/9000.0)))*(1-0.8)+0.8;
-                        rb.carry_id = -1;
+                        rb.carry_id = 0;
                         rb.forward_id = -1;
                     }
                 }
@@ -425,19 +425,18 @@ void WorldStatus::show() {
     cerr<<endl<<"---------------------------------\n";
 }
 
-void build_decision_tree(shared_ptr<WorldStatus> cur_status, int deep) {
+shared_ptr<DecisionTreeNode> build_decision_tree(shared_ptr<DecisionTreeNode> &root, int deep) {
     shared_ptr<WorldStatus> next_status = nullptr;
     int min_reach_time = MAX_NUMBER;
-    for(auto &rb: cur_status->robot_list) {
-        min_reach_time = min(cal_reach_time(*cur_status, rb.id), min_reach_time);
+    for(auto &rb: root->one_world->robot_list) {
+        min_reach_time = min(cal_reach_time(*root->one_world, rb.id), min_reach_time);
     }
     if(min_reach_time == -1) //有人没有目标
-        next_status = cur_status;
+        next_status = root->one_world;
     else
-        next_status = cal_next_statue(cur_status, min_reach_time);
+        next_status = cal_next_statue(root->one_world, min_reach_time);
 
     //创建第一层决策树
-    shared_ptr<DecisionTree> decision = make_shared<DecisionTree>();
     vector<int> no_target_robot;
     vector<vector<int>> can_choose;
     // 找到所有没有目标的机器人
@@ -446,20 +445,62 @@ void build_decision_tree(shared_ptr<WorldStatus> cur_status, int deep) {
             no_target_robot.push_back(rb.id);
             can_choose.emplace_back();
             for(auto&wb: next_status->wb_list) {
-                if (rb.carry_id == -1) { //这个机器人没有拿东西
+                if (rb.carry_id == 0) { //这个机器人没有拿东西
                     if(wb.output_box || wb.left_time != -1) //可以去有输出的地方或者是正在生产的地方
                         can_choose.back().push_back(wb.id);
                         
                 } else { // 如果这个机器人拿了东西
-                    if (rb.id != 1 && rb.id != 2 && rb.id != 3) //可以去所有能够放的地方放
+                    if (!wb.get_input_box_item(rb.carry_id))
                         can_choose.back().push_back(wb.id);
+                    // if (wb.id != 1 && wb.id != 2 && wb.id != 3) //可以去所有能够放的地方放
+                    //     can_choose.back().push_back(wb.id);
                 }
             }
         }
     }
+    if (debug) {
+        cerr<<can_choose[0].size()<<endl;
+    }
+    //遍历所有可能的去向，添加所有世界
+    world_choose(next_status, no_target_robot, can_choose, root);
+    deep -= 1;
+    if (deep > 0) {
+        for(auto & node:root->child) {
+            build_decision_tree(node, deep);
+        }
+    }
+    return root;
+}
+// 对于选择遍历结果
+void world_choose(shared_ptr<WorldStatus> cur_status, vector<int> &no_target_robot, vector<vector<int>> &can_choose, shared_ptr<DecisionTreeNode> &root) {
+    vector<int> choose;
+    true_world_choose(cur_status, no_target_robot, can_choose, choose, root);
+}
 
-    //遍历所有可能的去向，返回一个世界
-    
-    
+void true_world_choose(shared_ptr<WorldStatus> cur_status, vector<int> &no_target_robot, vector<vector<int>> &can_choose, vector<int> &choose, shared_ptr<DecisionTreeNode> &root) {
+    if (choose.size() == no_target_robot.size()) { //遍历结束
+        shared_ptr<DecisionTreeNode> child_node = make_shared<DecisionTreeNode>();
+        root->child.push_back(child_node);
+        // child_node->parent = root;
+        auto next_status = cur_status->duplicate();
+        child_node->one_world = next_status;
+        for(int i = 0; i < choose.size(); ++i) {
+            auto &rb = next_status->robot_list[no_target_robot[i]];
+            rb.forward_id = choose[i];
+            if (rb.carry_id == 0) { //身上没东西
+                rb.action = buy;
+            } else {
+                rb.action = sell;
+            }
+            child_node->choose.emplace_back(rb.id, rb.forward_id);
+        }
+        return;
+    }
+    int i = choose.size();
+    for(int j = 0; j < can_choose[i].size(); ++j) {
+        choose.emplace_back(j);
+        true_world_choose(cur_status,no_target_robot, can_choose,choose, root);
+        choose.pop_back();
+    }
 
 }

@@ -45,12 +45,12 @@ class WorldStatus {
     void show();
 };
 
-class DecisionTree {
+class DecisionTreeNode {
     public:
-    shared_ptr<DecisionTree> parent = nullptr;
-    shared_ptr<DecisionTree> child = nullptr;
-    vector<shared_ptr<WorldStatus>> multi_world; //很多世界
-    vector<vector<pair<int,int>>> choose; //在每个世界中做出的选择
+    shared_ptr<DecisionTreeNode> parent;
+    vector<shared_ptr<DecisionTreeNode>> child;
+    shared_ptr<WorldStatus> one_world; //这个世界
+    vector<pair<int,int>> choose; //在这个世界中做出的选择
 };
 
 // 紧急任务列表
@@ -99,6 +99,11 @@ shared_ptr<WorldStatus> cal_next_statue(const shared_ptr<WorldStatus> &cur_statu
 int cal_reach_time(const WorldStatus & cur_status, const int &robot_id);
 // 改变生产台的输入
 void change_wb_statue(Workbench & wb, int dt);
-void build_decision_tree(shared_ptr<WorldStatus> cur_status, int deep=1);
+// 生成决策树
+shared_ptr<DecisionTreeNode> build_decision_tree(shared_ptr<DecisionTreeNode> &root, int deep=1);
+// 对于选择遍历结果
+
+void world_choose(shared_ptr<WorldStatus> cur_status, vector<int> &no_target_robot, vector<vector<int>> &can_choose, shared_ptr<DecisionTreeNode> &root);
+void true_world_choose(shared_ptr<WorldStatus> cur_status, vector<int> &no_target_robot, vector<vector<int>> &can_choose, vector<int> &choose, shared_ptr<DecisionTreeNode> &root);
 #endif
 
