@@ -1,6 +1,7 @@
 #ifndef __ROBOT_H_
 #define __ROBOT_H_
 #include <utility>
+#include "basic.h"
 
 enum Action
 {
@@ -36,8 +37,8 @@ public:
     int action = None;
     Robot(){};
     std::pair<double, double> Robot_control(double distance, double angle); // 给定距离目标的距离和角度，输出前进速度和旋转速度
-    std::pair<double, double> Robot_control(std::pair<double,double>target_pos);    // 机器人控制
-    std::pair<double, double> Robot_pid_control(std::pair<double,double>target_pos, double target_theta); //给定目标点的位置和机器人在目标位置的姿态，输出前进速度和旋转速度
+    std::pair<double, double> Robot_control();    // 机器人控制
+    std::pair<double, double> Robot_pid_control(Pos target_pos, double target_theta); //给定目标点的位置和机器人在目标位置的姿态，输出前进速度和旋转速度
     double robot_speed_pid(double distance);
     Speed_pid speed_pid;
 

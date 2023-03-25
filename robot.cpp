@@ -2,7 +2,7 @@
 #include "controler.h"
 #include <iostream>
 #include <cmath>
-
+#include "bspline.h"
 using namespace std;
 double power_k1 = 4;
 double power_k2 = 15;
@@ -158,7 +158,7 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
     //     forward_speed = 6.0;
     // }
     // tt++;
-    // if ((this->id == 1) && frame_id > 1 && frame_id < 80)
+    // if ((this->id == 1 || this->id == 3) && frame_id > 420 && frame_id < 470)
     // {
     //     // cerr << frame_id << endl;
     //     cerr << "set forward speed: " << forward_speed << ", " << traction << " set rotate speed: " << rotate_speed << endl;
@@ -320,58 +320,100 @@ std::pair<double, double> Robot::power_field()
     if (same_direction)
         net_force = rotate_vector(net_force, same_direction * PI / 5);
 
-    // if ((this->id == 1) && frame_id > 2500 && frame_id < 2600)
-    // {
-    //     cerr << frame_id << " " << this->id << ",   " << same_direction << endl;
-    //     for (int i = 0; i < force.size(); ++i)
-    //     {
-    //         cerr << i << " " << force[i].first << ", " << force[i].second << ", " << length(force[i]) << " angle: " << atan2(force[i].second, force[i].first) << endl;
-    //     }
-    //     cerr << "net_force: " << net_force.first << ", " << net_force.second << ", " << length(net_force) << " angle: " << atan2(net_force.second, net_force.first) << endl;
-    //     cerr << "pos: " << this->pos.first << ", " << this->pos.second << endl;
-    //     cerr << "face: " << this->face << endl;
-    //     cerr << "----------------------------------->" << endl;
-    // }
+    if ((this->id == 1 || this->id == 3) && frame_id > 420 && frame_id < 470)
+    {
+        // cerr << frame_id << " " << this->id << ",   " << same_direction << endl;
+        // for (int i = 0; i < force.size(); ++i)
+        // {
+        //     cerr << i << " " << force[i].first << ", " << force[i].second << ", " << length(force[i]) << " angle: " << atan2(force[i].second, force[i].first) << endl;
+        // }
+        // cerr << "net_force: " << net_force.first << ", " << net_force.second << ", " << length(net_force) << " angle: " << atan2(net_force.second, net_force.first) << endl;
+        // cerr << "pos: " << this->pos.first << ", " << this->pos.second << endl;
+        // cerr << "face: " << this->face << endl;
+        // cerr << "----------------------------------->" << endl;
+    }
 
     return net_force;
 }
 // sqrt((u(1)-u(4))^2+(u(2)-u(5))^2)*cos(atan2(u(5)-u(2),u(4)-u(1))-pi/2-u(3))
 
 // -sqrt((u(1)-u(4))^2+(u(2)-u(5))^2)*sin(atan2(u(5)-u(2),u(4)-u(1))-pi/2-u(3))
-std::pair<double, double> Robot::Robot_pid_control(std::pair<double, double> target_pos, double target_theta)
+std::pair<double, double> Robot::Robot_pid_control(Pos target_pos, double target_theta)
 {
-    static double kp_r = -4;
+    static double kp_r = -40;
     static double kd_r = -2.5;
-    static double kp_f = -5;
+    static double kp_f = -80;
 
-    pair<double, double> current_pos = this->pos;
+    Pos current_pos(this->pos);
     double current_theta = this->face;
-    double distance = sqrt(pow(target_pos.first - current_pos.first, 2) + pow(target_pos.second - current_pos.second, 2));
+    double distance = sqrt(pow(target_pos.x - current_pos.x, 2) + pow(target_pos.y - current_pos.y, 2));
 
-    double theta_p = distance * cos(atan2(current_pos.second - target_pos.second, current_pos.first - target_pos.first) - PI / 2 - target_theta);
+    double theta_p = distance * cos(atan2(current_pos.y - target_pos.y, current_pos.x - target_pos.x) - PI / 2 - target_theta);
     double rotate_rate = kp_r * theta_p + kd_r * (current_theta - target_theta); // 法向 pd 控制
-    double speed_p = -distance * sin(atan2(current_pos.second - target_pos.second, current_pos.first - target_pos.first) - PI / 2 - target_theta);
+    double speed_p = -distance * sin(atan2(current_pos.y - target_pos.y, current_pos.x - target_pos.x) - PI / 2 - target_theta);
     double speed = kp_f * speed_p; // 前向 p 控制
 
-    // if ((this->id == 1) && frame_id > 1 && frame_id < 70)
-    // {
-    //     cerr << frame_id << " " << this->id << endl;
-    //     cerr << "target pos: " << target_pos.first << ", " << target_pos.second << endl;
-    //     cerr << "current pos: " << current_pos.first << ", " << current_pos.second << endl;
-    //     cerr << "current theta: " << this->face << ", target theta: " << target_theta << endl;
-    //     cerr << "speed" << speed << ", rotate rate: " << rotate_rate << endl;
-    //     cerr << distance << ", " << atan2(current_pos.second - target_pos.second, current_pos.first - target_pos.first) << ", " << sin(atan2(current_pos.second - target_pos.second, current_pos.first - target_pos.first) - PI / 2 - target_theta) << endl;
-    //     cerr << "----------------------------------->" << endl;
-    // }
+    if ((this->id == 1) && frame_id > 50 && frame_id < 60)
+    {
+        // cerr << frame_id << " " << this->id << endl;
+        // cerr << "target pos: " << target_pos << endl;
+        // cerr << "current pos: " << current_pos << endl;
+        // cerr << "current theta: " << this->face << ", target theta: " << target_theta << endl;
+        // cerr << "speed: " << speed << ", rotate rate: " << rotate_rate << endl;
+        // cerr << distance << ", " << cos(atan2(current_pos.y - target_pos.y, current_pos.x - target_pos.x) - PI / 2 - target_theta) << ", " << sin(atan2(current_pos.y - target_pos.y, current_pos.x - target_pos.x) - PI / 2 - target_theta) << endl;
+        // cerr<<"set speed: "<<speed<<" rotate speed: "<<rotate_rate<<endl;
+        // cerr << "----------------------------------->" << endl;
+    }
 
     return {speed, rotate_rate};
 }
 
-std::pair<double, double> Robot::Robot_control(std::pair<double,double>target_pos)
+std::pair<double, double> Robot::Robot_control()
 {
-    // 路劲规划
-    // this->power_field();
+    // 路径规划
+    double half_car_lenb = 0.53; // 持有物品的半径
+    if (this->carry_id == 0)
+        half_car_lenb = 0.45;
+
+    Pos current_pos(this->pos);
+    Pos target_pos(wb_list[this->forward_id].pos);
+
+    vector<Pos> control_list{current_pos, (2 * current_pos + target_pos) / 3, (current_pos + 2 * target_pos) / 3, target_pos};
+    Bspline bspline(control_list);
+    bspline.augement_ctrl_point(half_car_lenb, 0, Vec(this->face));
+    bspline.augement_ctrl_point(half_car_lenb, bspline.control_point.size() - 1, Vec(0.0));
+
+    vector<Pos> path_list = bspline.create_b_spline();
+
     // pid 控制
-    // this->Robot_pid_control();
-    return {0.0,0.0};
+    Vec forward_vector(path_list[0], path_list[20]);
+    pair<double, double> result = this->Robot_pid_control(path_list[20], forward_vector.angle());
+    if ((this->id == 1) && frame_id > 50 && frame_id < 60)
+    {
+        // cerr << frame_id << " " << this->id << endl;
+        // cerr << "target pos: " << target_pos << endl;
+    //     cerr << "current pos: " << current_pos << endl;
+        // cerr << "next pos: " << path_list[20] << endl;
+        // cerr << "control point: " << endl;
+        // for (auto &p : control_list)
+        // {
+        //     cerr << p << "; " << endl;
+        // }
+        // cerr << endl;
+        // cerr << "extra control point: " << endl;
+        // for (auto &p : bspline.control_point)
+        // {
+        //     cerr << p << "; " << endl;
+        // }
+        // cerr << endl;
+        // cerr << "path point: " << endl;
+        // for (int i = 0; i < 10; i++)
+        // {
+        //     cerr << path_list[i] << "; " << endl;
+        // }
+    //     cerr << endl;
+        // cerr << "*******************" << endl;
+    }
+
+    return result;
 }
