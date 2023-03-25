@@ -27,8 +27,14 @@ int main(int argc, char *argv[])
     printf("OK\n");
     init();
     fflush(stdout);
+    cal_map_type();
+    // WorldStatus a(wb_list, robot_list,0,0);
+    // a.show();
+    // cerr<<map_type;
+    // exit(0);
     while (1)
     {
+        
         get_frame(debug);
         printf("%d\n", frame_id);
         // create_urgent(); // 创建紧急任务      
@@ -65,7 +71,7 @@ int main(int argc, char *argv[])
                     for (int j = 0; j < wb_list.size(); ++j)
                     {
                         // cerr<< frame_id<<endl;
-                        if (frame_id < 0)
+                        if (frame_id < 2)
                         {
                             if (wb_list[j].output_occupy_by != -1 || wb_list[j].left_time == -1)
                                 continue; // 被占用或者没有在生产就下一个
@@ -105,6 +111,8 @@ int main(int argc, char *argv[])
                     // 遍历能够接受该物品的工作台类别
                     for (auto wb_type : product_to_sell[this_robot.carry_id])
                     {
+                        if (frame_id < 8000 && wb_type == 9 && type_to_wb[7].size() != 0)
+                            continue;
                         // 在特定类别中寻找
                         for (auto wb_i : type_to_wb[wb_type])
                         {
@@ -112,7 +120,7 @@ int main(int argc, char *argv[])
                             auto &wb = wb_list[wb_i];
                             if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id))
                                 continue; // 被占用或者输入格满就下一个
-                            double tmp = cal_distance(this_robot.pos, wb.pos);
+                            double tmp = cal_distance(this_robot.pos, wb.pos) - wb.reduce_distance();
                             // 如果他是7号并且在生产中，尽可能不要给他
                             if (wb.type == 7 && wb.left_time > 300)
                             {
@@ -129,18 +137,18 @@ int main(int argc, char *argv[])
                     if (forward_id != -1)
                     {
                         // 偏好选择
-                        for (auto wb_i : favourite_map[wb_list[forward_id].type])
-                        {
-                            auto &wb = wb_list[wb_i];
-                            if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id))
-                                continue; // 被占用或者输入格满就下一个
-                            // 出现同类型的没有在生产的7号工作台，并且工作台与当前目标距离差值小
-                            if (wb.left_time < 300 && (wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6) > 1) && cal_distance(wb_list[wb.id].pos, wb_list[forward_id].pos) < 10)
-                            {
-                                forward_id = wb.id;
-                            }
-                            break;
-                        }
+                        // for (auto wb_i : favourite_map[wb_list[forward_id].type])
+                        // {
+                        //     auto &wb = wb_list[wb_i];
+                        //     if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id))
+                        //         continue; // 被占用或者输入格满就下一个
+                        //     // 出现同类型的没有在生产的7号工作台，并且工作台与当前目标距离差值小
+                        //     if (wb.left_time < 300 && (wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6) > 1) && cal_distance(wb_list[wb.id].pos, wb_list[forward_id].pos) < 10)
+                        //     {
+                        //         forward_id = wb.id;
+                        //     }
+                        //     break;
+                        // }
                         this_robot.action = sell;
                         this_robot.forward_id = forward_id;
                         wb_list[forward_id].input_occupy_by[this_robot.carry_id] = i;
@@ -233,8 +241,10 @@ int main(int argc, char *argv[])
 
                     else if (this_robot.action == sell)
                     {
+                        
                         printf("sell %d\n", this_robot.id);
                         wb_list[this_robot.forward_id].input_occupy_by[this_robot.carry_id] = -1;
+                        wb_list[this_robot.forward_id].input_frame = frame_id;
                     }
                     // for(auto &urgent_task: urgent_list) {
                     //     for(int k = 0; k < urg)

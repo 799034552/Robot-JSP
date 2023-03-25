@@ -23,6 +23,7 @@ class Workbench {
     int left_time; //剩余生产时间
     int input_box;
     int output_box;
+    int input_frame = -1;
     int output_occupy_by = -1; //拿东西是否被占用
     vector<int> input_occupy_by; //放东西是否被占用
     Urgent_task* urgent_task;
@@ -30,6 +31,7 @@ class Workbench {
 
     };
     bool get_input_box_item(int n); // 获取对应的输入格子是否被占用
+    double reduce_distance();
 };
 
 class WorldStatus {
@@ -70,9 +72,10 @@ extern unordered_map<int, vector<int>> product_to_sell;
 extern unordered_map<int, vector<int>> favourite_map;
 extern bool debug;
 extern vector<Urgent_task*> urgent_list;
+extern int map_type;
 
 
-
+void cal_map_type();
 bool readUntilOK(char*);
 void read_map();
 //用空格切割输入并转换为double

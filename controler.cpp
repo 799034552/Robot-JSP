@@ -1,6 +1,7 @@
 #include "controler.h"
 using namespace std;
 
+int map_type = 0;
 const double normal_speed = 5.2;
 char tmp_txt[1024];
 vector<Robot> robot_list;
@@ -503,4 +504,73 @@ void true_world_choose(shared_ptr<WorldStatus> cur_status, vector<int> &no_targe
         choose.pop_back();
     }
 
+}
+
+double Workbench::reduce_distance() {
+    if (input_frame == -1) return 0;
+    switch (type)
+    {
+    case 1:
+    case 2:
+    case 3:
+    case 8:
+    case 9:
+        return 0;
+    }
+    int count = 0;
+    for(auto &can_input_type: wb_can_put[type]) {
+        if (get_input_box_item(can_input_type))
+            ++count;
+    }
+    switch (map_type)
+    {
+    case 1:
+        if (wb_can_put[type].size() - count == 1) {
+            return (frame_id - input_frame) / 50.0 * 1;
+        }
+        break;
+    case 2:
+        // if (type == 4) {
+        //     return (frame_id - input_frame) / 50.0 * 3;
+        // }
+        if (wb_can_put[type].size() - count == 1) {
+            return (frame_id - input_frame) / 50.0 * 1;
+        }
+        break;
+    case 3:
+        // if (wb_can_put[type].size() - count == 1) {
+        //     return (frame_id - input_frame) / 50.0 * 1;
+        // }
+        break;
+    case 4:
+        if (type == 4) {
+            return (frame_id - input_frame) / 50.0 * 3;
+        }
+        if (wb_can_put[type].size() - count == 1) {
+            // return (frame_id - input_frame) / 50.0 * 0.9;
+            return (frame_id - input_frame) / 50.0 * 0.9;
+        }
+        break;
+    }
+    // if (type_to_wb[4].size() == 1 && type == 4 && wb_list[type_to_wb[4][0]].id == 17) { // 图4
+    //     return (frame_id - input_frame) / 50.0 * 3;
+    // }
+    // if (type_to_wb[4].size() == 1 && type == 4 && wb_list[type_to_wb[4][0]].id == 12) { // 图2
+    //     return (frame_id - input_frame) / 50.0 * 4;
+    // }
+    if (wb_can_put[type].size() - count == 1) {
+        return (frame_id - input_frame) / 50.0 * 3;
+    }
+    return 0;
+}
+
+void cal_map_type() {
+    if (wb_list.size() == 43)
+        map_type = 1;
+    if (wb_list.size() == 25)
+        map_type = 2;
+    if (wb_list.size() == 50)
+        map_type = 3;
+    if (wb_list.size() == 18)
+        map_type = 4;
 }
