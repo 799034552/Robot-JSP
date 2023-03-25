@@ -6,12 +6,13 @@
 #include <vector>
 #include <math.h>
 #include "robot.h"
+#include <memory>
 #include <algorithm>
 #include <unordered_map>
 using namespace std;
 
 #define PI 3.14159265359
-#define MAX_NUMBER 500000
+#define MAX_NUMBER 50000000
 
 struct Urgent_task;
 class Workbench {
@@ -29,6 +30,27 @@ class Workbench {
 
     };
     bool get_input_box_item(int n); // 获取对应的输入格子是否被占用
+};
+
+class WorldStatus {
+    public:
+    vector<Workbench> wb_list;
+    vector<Robot> robot_list;
+    int frame_id;
+    int money;
+    WorldStatus() {}
+    WorldStatus(vector<Workbench> _wb_list, vector<Robot> _robot_list, int _frame_id, int _money)
+        :wb_list(_wb_list),robot_list(_robot_list), frame_id(_frame_id), money(_money) {}
+    shared_ptr<WorldStatus> duplicate();
+    void show();
+};
+
+class DecisionTree {
+    public:
+    shared_ptr<DecisionTree> parent = nullptr;
+    shared_ptr<DecisionTree> child = nullptr;
+    vector<shared_ptr<WorldStatus>> multi_world; //很多世界
+    vector<vector<pair<int,int>>> choose; //在每个世界中做出的选择
 };
 
 // 紧急任务列表
@@ -61,7 +83,7 @@ void delete_line(int n=1);
 // 获取一帧的数据
 void get_frame(bool is_debug=false);
 // 获取距离
-inline double cal_distance(pair<double, double> a, pair<double, double> b) {
+inline double cal_distance(const pair<double, double> &a,const pair<double, double> &b) {
     return sqrt((a.first - b.first) * (a.first - b.first) + (a.second - b.second) * (a.second - b.second));
 }
 // 获取方向
@@ -72,6 +94,11 @@ bool can_somebody_put(int pr_type, pair<double, double> robot_pos, pair<double, 
 void init();
 void create_urgent();
 double add_distance(int wb_i);
-
+//假设这个状态中所有机器人的目标都不变，计算dt时间后整个世界的状态
+shared_ptr<WorldStatus> cal_next_statue(const shared_ptr<WorldStatus> &cur_status, int dt);
+int cal_reach_time(const WorldStatus & cur_status, const int &robot_id);
+// 改变生产台的输入
+void change_wb_statue(Workbench & wb, int dt);
+void build_decision_tree(shared_ptr<WorldStatus> cur_status, int deep=1);
 #endif
 
