@@ -213,8 +213,8 @@ int main(int argc, char *argv[])
 
                     // 判断机器人旋转方向
                     auto angle = cal_angle(this_robot.pos, wb_list[this_robot.forward_id].pos);
-                    // std::pair<double, double> control = this_robot.Robot_control(distance, angle);
-                    std::pair<double, double> control = this_robot.Robot_control();
+                    std::pair<double, double> control = this_robot.Robot_control(distance, angle);
+                    // std::pair<double, double> control = this_robot.Robot_control();
                     // cerr<<this_robot.id<<"  "<<frame_id<<endl;
                     // exit(0);
                     printf("forward %d %f\n", this_robot.id, control.first);

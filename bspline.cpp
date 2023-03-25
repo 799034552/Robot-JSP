@@ -14,21 +14,21 @@ Bspline::~Bspline()
 {
 }
 
-double f1(double &s)
+void f1(double &s)
 {
-    return pow(1 - s, 3.0) / 6;
+    s = pow(1 - s, 3.0) / 6;
 }
-double f2(double &s)
+void f2(double &s)
 {
-    return (3 * s * s * s - 6 * s * s + 4) / 6.0;
+    s = (3 * s * s * s - 6 * s * s + 4) / 6.0;
 }
-double f3(double &s)
+void f3(double &s)
 {
-    return (-3 * s * s * s + 3 * s * s + 3 * s + 1) / 6.0;
+    s = (-3 * s * s * s + 3 * s * s + 3 * s + 1) / 6.0;
 }
-double f4(double &s)
+void f4(double &s)
 {
-    return s * s * s / 6.0;
+    s = s * s * s / 6.0;
 }
 
 /// @brief 增广控制点，使曲线经过点control_point[index]
@@ -70,7 +70,9 @@ vector<Pos> Bspline::create_b_spline()
     for (int i = 0; i < N - 3; ++i)
     {
         for (int j = 0; j < sample_size; ++j, ++it)
+        {
             *it = this->control_point[i] * f1s[j] + this->control_point[i + 1] * f2s[j] + this->control_point[i + 2] * f3s[j] + this->control_point[i + 3] * f4s[j];
+        }
     }
     return path;
 }
