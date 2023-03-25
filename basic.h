@@ -2,6 +2,7 @@
 #define __BASIC_H_
 #include <cmath>
 #include <utility>
+#include <iostream>
 
 class Pos
 {
@@ -20,6 +21,11 @@ public:
     friend Pos operator*(double scale, const Pos &A);
     friend Pos operator/(const Pos &A, double scale);
     friend Pos operator/(double scale, const Pos &A);
+    friend std::ostream &operator<<(std::ostream &output, const Pos &p)
+    {
+        output << p.x << ", " << p.y;
+        return output;
+    }
 
     Pos operator+(const Pos &b)
     {
@@ -41,7 +47,7 @@ public:
     Vec(){};
     Vec(double x, double y);
     Vec(double angle); // 生成单位向量
-    Vec(Pos start,Pos end);
+    Vec(Pos start, Pos end);
     ~Vec();
 
     Vec operator+(const Vec &b)
@@ -62,6 +68,11 @@ public:
     friend Vec operator*(double scale, const Vec &A);
     friend Vec operator/(const Vec &A, double scale);
     friend Vec operator/(double scale, const Vec &A);
+    friend std::ostream &operator<<(std::ostream &output, const Vec &v)
+    {
+        output << v.x << ", " << v.y;
+        return output;
+    }
 
     double length();
     Vec unit_vector();
