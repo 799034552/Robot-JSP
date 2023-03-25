@@ -183,7 +183,7 @@ bool can_somebody_put(int pr_type, pair<double, double> robot_pos, pair<double, 
                 // 计算需要消耗的时间
                 auto d1 = cal_distance(robot_pos, wb_pos);
                 auto d2 = cal_distance(wb_pos, wb_list[wb_i].pos);
-                auto total_frame = (d1 + d2) / 5.5 * 50;
+                auto total_frame = (d1 + d2) / 5.2 * 50;
                 if (total_frame < 9000 - frame_id)
                     return true;
             }
@@ -279,12 +279,16 @@ void create_urgent() {
 }
 
 double add_distance(int wb_i) {
-    return 0;
+    auto &wb = wb_list[wb_i];
+    double left_time_cost = 0;
+    if (!wb.output_box && wb.left_time>= 0) {
+        left_time_cost = wb.left_time / 50.0 * 5.2 + 100;
+    }
+    return left_time_cost;
     // return 0;
     // if (frame_id > 8282)
     //     return 0;
     auto x = frame_id;
-    auto &wb = wb_list[wb_i];
     switch (wb.type)
     {
     case 1:

@@ -71,9 +71,9 @@ int main(int argc, char *argv[])
                     for (int j = 0; j < wb_list.size(); ++j)
                     {
                         // cerr<< frame_id<<endl;
-                        if (frame_id < 2)
+                        if (frame_id < 9000)
                         {
-                            if (wb_list[j].output_occupy_by != -1 || wb_list[j].left_time == -1)
+                            if (wb_list[j].output_occupy_by != -1 || (wb_list[j].left_time == -1 && !wb_list[j].output_box))
                                 continue; // 被占用或者没有在生产就下一个
                         }
                         else
