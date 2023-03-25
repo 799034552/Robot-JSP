@@ -8,7 +8,7 @@ Pos::Pos(double x, double y)
 Pos::~Pos()
 {
 }
-friend Pos operator*(const Pos &A, double scale)
+Pos operator*(const Pos &A, double scale)
 {
     return {A.x * scale, A.y * scale};
 }
