@@ -4,10 +4,10 @@ Pos::Pos(double x, double y)
     this->x = x;
     this->y = y;
 }
-Pos::Pos(std::pair<double, double> p)
+Pos::Pos(std::pair<double, double> pos)
 {
-    this->x = p.first;
-    this->y = p.second;
+    this->x = pos.first;
+    this->y = pos.second;
 }
 Pos::~Pos()
 {
@@ -37,6 +37,12 @@ Vec::Vec(double angle)
 {
     this->x = cos(angle);
     this->y = sin(angle);
+}
+/// @brief 生成 start 指向 end 的矢量
+Vec::Vec(Pos start,Pos end)
+{
+    this->x = end.x - start.x;
+    this->y = end.y - start.y;
 }
 Vec::~Vec()
 {
@@ -71,4 +77,9 @@ Vec Vec::unit_vector()
         return {0, 0};
     else
         return {this->x / len, this->y / len};
+}
+
+double Vec::angle()
+{
+    return atan2(this->y,this->x);
 }

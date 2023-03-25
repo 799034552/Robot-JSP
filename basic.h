@@ -13,7 +13,7 @@ public:
 
     Pos(){};
     Pos(double x, double y);
-    Pos(std::pair<double, double> p);
+    Pos(std::pair<double, double> pos);
     ~Pos();
 
     friend Pos operator*(const Pos &A, double scale);
@@ -41,6 +41,7 @@ public:
     Vec(){};
     Vec(double x, double y);
     Vec(double angle); // 生成单位向量
+    Vec(Pos start,Pos end);
     ~Vec();
 
     Vec operator+(const Vec &b)
@@ -64,6 +65,7 @@ public:
 
     double length();
     Vec unit_vector();
+    double angle();
 };
 
 #endif
