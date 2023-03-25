@@ -13,13 +13,10 @@ Pos::~Pos()
 {
 }
 Pos operator*(const Pos &A, double scale)
-<<<<<<< HEAD
-=======
 {
     return {A.x * scale, A.y * scale};
 }
 Pos operator*(double scale, const Pos &A)
->>>>>>> 0abbbc7dc911e81cee9d2b23f407536834cd8db5
 {
     return {A.x * scale, A.y * scale};
 }
