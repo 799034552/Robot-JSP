@@ -12,6 +12,10 @@ Pos operator*(const Pos &A, double scale)
 {
     return {A.x * scale, A.y * scale};
 }
+Pos operator*(double scale, const Pos &A)
+{
+    return {A.x * scale, A.y * scale};
+}
 
 Vec::Vec(double x, double y)
 {
@@ -28,6 +32,11 @@ Vec::~Vec()
 }
 
 Vec operator*(const Vec &A, double scale)
+{
+    return Vec{A.x * scale, A.y * scale};
+}
+
+Vec operator*(double scale, const Vec &A)
 {
     return Vec{A.x * scale, A.y * scale};
 }

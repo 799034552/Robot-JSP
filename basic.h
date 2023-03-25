@@ -15,6 +15,7 @@ public:
     ~Pos();
 
     friend Pos operator*(const Pos &A, double scale);
+    friend Pos operator*(double scale, const Pos &A);
 };
 
 class Vec
@@ -45,6 +46,7 @@ public:
         return p;
     }
     friend Vec operator*(const Vec &A, double scale);
+    friend Vec operator*(double scale, const Vec &A);
 
     double length();
     Vec unit_vector();
