@@ -158,18 +158,14 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
     //     forward_speed = 6.0;
     // }
     // tt++;
-    // if ((this->id == 1 || this->id == 3) && frame_id > 420 && frame_id < 470)
-    // {
-    //     // cerr << frame_id << endl;
-    //     cerr << "set forward speed: " << forward_speed << ", " << traction << " set rotate speed: " << rotate_speed << endl;
-    //     cerr << "actual forward speed: " << length(this->linear_speed) << " actual rotate speed: " << this->rotate_speed << endl;
-    //     // cerr << "distance o to wall:" << dis << " radius:" << r;
-    //     // cerr << this->linear_speed.first << ", " << this->linear_speed.second;
-    //     cerr << distance << ", " << angle_diff << endl;
-    //     // cerr << robot_wall_re.first << " " << robot_wall_re.second << endl;
-    //     // cerr << this->face << " " << this->pos.first << " " << this->pos.second << endl;
-    //     cerr << "************************************" << endl;
-    // }
+    if ((this->id == 1 || this->id == 3) && frame_id > 420 && frame_id < 460)
+    {
+        // cerr << frame_id << ", "<<this->id<<endl;
+        // cerr << "set forward speed: " << forward_speed << " set rotate speed: " << rotate_speed << endl;
+        // cerr << "current forward speed: " << length(this->linear_speed) << " current rotate speed: " << this->rotate_speed << endl;
+        // cerr << "face: "<<this->face << " pos: " << this->pos.first << ", " << this->pos.second << endl;
+        // cerr << "__________________________________________________________" << endl;
+    }
 
     std::pair<double, double> result(forward_speed, rotate_speed);
     return result;
@@ -284,14 +280,6 @@ std::pair<double, double> Robot::power_field()
             repulsion.second *= 0;
         }
 
-        // pair<double, double> robot(current_pos.first - robot_list[i].pos.first,current_pos.second - robot_list[i].pos.second)
-
-        // if (abs(this->face) + abs(robot_list[i].face) >= PI / 180 * 160 && abs(this->face) + abs(robot_list[i].face) <= PI / 180 * 200)
-        // {
-        //     test = true;
-        //     repulsion.first = repulsion.first * cos(PI / 6) - repulsion.second * sin(PI / 6);
-        //     repulsion.second = repulsion.first * sin(PI / 6) + repulsion.second * cos(PI / 6);
-        // }
         force.push_back(repulsion);
     }
     // 计算墙壁斥力
@@ -313,23 +301,21 @@ std::pair<double, double> Robot::power_field()
         double angle2 = atan2(net_force.second, net_force.first);
         double angle_sum = abs(angle1) + abs(angle2);
         if (angle_sum >= PI / 180 * 160 && angle_sum <= PI / 180 * 180)
-            same_direction = 1;
+            same_direction = -1;
         if (angle_sum >= PI / 180 * 180 && angle_sum <= PI / 180 * 200)
             same_direction = -1;
     }
     if (same_direction)
         net_force = rotate_vector(net_force, same_direction * PI / 5);
 
-    if ((this->id == 1 || this->id == 3) && frame_id > 420 && frame_id < 470)
+    if ((this->id == 1 || this->id == 3) && frame_id > 420 && frame_id < 460)
     {
-        // cerr << frame_id << " " << this->id << ",   " << same_direction << endl;
+        // cerr << frame_id << " " << this->id << ", " << same_direction << endl;
         // for (int i = 0; i < force.size(); ++i)
         // {
         //     cerr << i << " " << force[i].first << ", " << force[i].second << ", " << length(force[i]) << " angle: " << atan2(force[i].second, force[i].first) << endl;
         // }
         // cerr << "net_force: " << net_force.first << ", " << net_force.second << ", " << length(net_force) << " angle: " << atan2(net_force.second, net_force.first) << endl;
-        // cerr << "pos: " << this->pos.first << ", " << this->pos.second << endl;
-        // cerr << "face: " << this->face << endl;
         // cerr << "----------------------------------->" << endl;
     }
 
@@ -392,7 +378,7 @@ std::pair<double, double> Robot::Robot_control()
     {
         // cerr << frame_id << " " << this->id << endl;
         // cerr << "target pos: " << target_pos << endl;
-    //     cerr << "current pos: " << current_pos << endl;
+        //     cerr << "current pos: " << current_pos << endl;
         // cerr << "next pos: " << path_list[20] << endl;
         // cerr << "control point: " << endl;
         // for (auto &p : control_list)
@@ -411,7 +397,7 @@ std::pair<double, double> Robot::Robot_control()
         // {
         //     cerr << path_list[i] << "; " << endl;
         // }
-    //     cerr << endl;
+        //     cerr << endl;
         // cerr << "*******************" << endl;
     }
 
