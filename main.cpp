@@ -231,6 +231,16 @@ int main(int argc, char *argv[])
             robot_list[3].forward_id = 42;
             robot_list[3].action = buy;
         }
+        if (map_type == 3 && frame_id < 130) {
+            robot_list[1].forward_id = 28;
+            robot_list[1].action = buy;
+            robot_list[3].forward_id = 16;
+            robot_list[3].action = buy;
+        }
+        // if (frame_id < 850 && frame_id >500 && map_type == 1 && robot_list[3].forward_id == -1) {
+        //     robot_list[3].forward_id = 42;
+        //     robot_list[3].action = buy;
+        // }
         for (int i = 0; i < 4; ++i)
         {
             auto &this_robot = robot_list[i];
