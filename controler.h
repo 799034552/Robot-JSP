@@ -23,6 +23,7 @@ class Workbench {
     int left_time; //剩余生产时间
     int input_box;
     int output_box;
+    int out_occupy_by_second = -1;
     int input_frame = -1;
     int output_occupy_by = -1; //拿东西是否被占用
     vector<int> input_occupy_by; //放东西是否被占用
