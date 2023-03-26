@@ -346,7 +346,7 @@ std::pair<double, double> Robot::power_field()
     if (same_direction)
         net_force = rotate_vector(net_force, same_direction * PI / 5);
 
-    if ((this->id == 1 || this->id == 3) && frame_id > 1100 && frame_id < 1140)
+    if ((this->id == 1 || this->id == 3) && frame_id > 2740 && frame_id < 2780)
     {
         // cerr << frame_id << " " << this->id << ", " << same_direction << endl;
         // cerr << Vec(this->face) << endl;
