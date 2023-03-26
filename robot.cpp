@@ -107,6 +107,7 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
     static double k2 = 2;     //  前进速度参数，用距离工作台的距离控制速度
     static double k3 = 1;     //  前进速度参数,用离墙的距离控制速度
     static double ksp = 2;    //  势力场控制速度p参数
+    static double ksp2 = 1;    //  目标工作台离墙很近时势力场控制速度p参数
     static double ksd = 0.04; //  势力场控制速度d参数
 
     static double rotate_radius = 2.18;          // 最大转弯半径
@@ -130,7 +131,10 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
 
     std::pair<double, double> forward_direction(cos(this->face), sin(this->face));
     double traction = (forward_direction.first * net_force.first + forward_direction.second * net_force.second); // 前进方向的力
-    forward_speed = ksp * traction + ksd * (length(this->linear_speed) - this->speed_pid.last_speed);
+    if (distance_pos_wall(wb_list[this->forward_id].pos) < 2 && Pos(wb_list[this->forward_id].pos).distance(this->pos)<10)
+        forward_speed = ksp2 * traction + ksd * (length(this->linear_speed) - this->speed_pid.last_speed);
+    else
+        forward_speed = ksp * traction + ksd * (length(this->linear_speed) - this->speed_pid.last_speed);
     this->speed_pid.last_speed = length(this->linear_speed);
 
     // 计算转弯的圆心坐标
@@ -158,8 +162,13 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
     //     forward_speed = 6.0;
     // }
     // tt++;
-    if ((this->id == 1 || this->id == 3) && frame_id > 420 && frame_id < 460)
+    if ((this->id == 1) && frame_id > 0 && frame_id < 500)
     {
+        fout.setf(ios::fixed, ios::floatfield); // 设定为 fixed 模式，以小数点表示浮点数
+        fout.precision(2);                      // 设置精度 2
+        fout << frame_id << "_" << this->id << ", ";
+        fout << Vec(this->linear_speed).angle_diff(this->face) << ", ";
+        fout << length(this->linear_speed) << ", " << this->pos.first << ", " << this->pos.second << endl;
         // cerr << frame_id << ", "<<this->id<<endl;
         // cerr << "set forward speed: " << forward_speed << " set rotate speed: " << rotate_speed << endl;
         // cerr << "current forward speed: " << length(this->linear_speed) << " current rotate speed: " << this->rotate_speed << endl;
@@ -255,8 +264,8 @@ std::pair<double, double> Robot::power_field()
     // static double k1 = power_k1;
     // static double k2 = power_k2;
     // static double p0 = power_p0;
-    static double wk = 20;                                                // 墙壁斥力场scale
-    static double wp = 2;                                                 // 墙壁斥力场产生作用距离
+    static double wk = 40;                                                // 墙壁斥力场scale
+    static double wp = 0.7;                                               // 墙壁斥力场产生作用距离
     std::pair<double, double> target_pos = wb_list[this->forward_id].pos; // 目标位置
     std::pair<double, double> current_pos = this->pos;                    // 当前位置
 
@@ -283,10 +292,10 @@ std::pair<double, double> Robot::power_field()
         force.push_back(repulsion);
     }
     // 计算墙壁斥力
-    // force.push_back(cal_repulsion(current_pos, {current_pos.first, 0}, wk, wp));
-    // force.push_back(cal_repulsion(current_pos, {current_pos.first, 50}, wk, wp));
-    // force.push_back(cal_repulsion(current_pos, {0, current_pos.second}, wk, wp));
-    // force.push_back(cal_repulsion(current_pos, {50, current_pos.second}, wk, wp));
+    force.push_back(cal_repulsion(current_pos, {current_pos.first, 0}, target_pos, wk, wp));
+    force.push_back(cal_repulsion(current_pos, {current_pos.first, 50}, target_pos, wk, wp));
+    force.push_back(cal_repulsion(current_pos, {0, current_pos.second}, target_pos, wk, wp));
+    force.push_back(cal_repulsion(current_pos, {50, current_pos.second}, target_pos, wk, wp));
     // 计算合力
     for (int i = 0; i < force.size(); ++i)
     {
@@ -295,7 +304,7 @@ std::pair<double, double> Robot::power_field()
     }
 
     double same_direction = 0; // 斥力方向与前进方向相反,即两个机器人相向而行时,控制他们避让
-    for (int i = 1; i < force.size(); ++i)
+    for (int i = 1; i < 4; ++i)
     {
         double angle1 = atan2(force[i].second, force[i].first);
         double angle2 = atan2(net_force.second, net_force.first);
