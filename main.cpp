@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
                             // if (wb_list[j].type == 1 || wb_list[j].type == 2 || wb_list[j].type == 3) {
                             //     if(wb_list[j].output_occupy_by != -1 && )
                             // }
-                            if (wb_list[j].output_occupy_by != -1 || (wb_list[j].left_time == -1 && !wb_list[j].output_box))
+                            if ((wb_list[j].output_occupy_by != -1 || wb_list[j].type == 9) || (wb_list[j].left_time == -1 && !wb_list[j].output_box))
                                 continue; // 被占用或者没有在生产就下一个
                         }
                         else
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
                             auto &wb = wb_list[wb_i];
                             if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id))
                                 continue; // 被占用或者输入格满就下一个
-                            double tmp = cal_distance(this_robot.pos, wb.pos) - wb.reduce_distance();
+                            double tmp = cal_distance(this_robot.pos, wb.pos) - wb.reduce_distance(this_robot.carry_id);
                             // if (wb.type == 4) {
                             //     debug = 1;
                             //     cerr<< tmp<<endl<<wb.reduce_distance();
@@ -146,20 +146,40 @@ int main(int argc, char *argv[])
                     // 如果找到了
                     if (forward_id != -1)
                     {
+                        vector<pair<pair<int,int>, int>> type_seven;
                         // 偏好选择
+                        int m = 0;
                         for (auto wb_i : favourite_map[wb_list[forward_id].type])
                         {
                             auto &wb = wb_list[wb_i];
-                            if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id))
+                            if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id ) || wb.left_time < 300)
                                 continue; // 被占用或者输入格满就下一个
-                            // 出现同类型的没有在生产的7号工作台，并且工作台与当前目标距离差值小
-                            // if (wb.left_time < 300 && (wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6) > 1) && cal_distance(wb_list[wb.id].pos, wb_list[forward_id].pos) < 10)
-                            if (wb.left_time < 300 && (map_type == 1 || map_type == 2))
-                            {
-                                forward_id = wb.id;
-                            }
-                            break;
+                            pair<int,int> tmp {wb_i,m};
+                            type_seven.emplace_back(tmp,cal_input_total(wb_i));
+                            ++m;
                         }
+                        sort(type_seven.begin(), type_seven.end(), [](pair<pair<int,int>, int> a, pair<pair<int,int>, int> b) {return a.second > b.second;});
+                        for(m = 1; m < type_seven.size(); ++m) {
+                            if (type_seven[m].second < type_seven[m - 1].second)
+                                break;
+                        }
+                        sort(type_seven.begin(), type_seven.begin()+m, [](pair<pair<int,int>, int> a, pair<pair<int,int>, int> b) {return a.first.second < b.first.second;});
+                        if (map_type == 1 && type_seven.size() > 0) {
+                            forward_id = type_seven[0].first.first;
+                        }
+                        // for (auto wb_i : favourite_map[wb_list[forward_id].type])
+                        // {
+                        //     auto &wb = wb_list[wb_i];
+                        //     if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id))
+                        //         continue; // 被占用或者输入格满就下一个
+                        //     // 出现同类型的没有在生产的7号工作台，并且工作台与当前目标距离差值小
+                        //     // if (wb.left_time < 300 && (wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6) > 1) && cal_distance(wb_list[wb.id].pos, wb_list[forward_id].pos) < 10)
+                        //     if (wb.left_time < 300 && (map_type == 1))
+                        //     {
+                        //         forward_id = wb.id;
+                        //     }
+                        //     break;
+                        // }
                         this_robot.action = sell;
                         this_robot.forward_id = forward_id;
                         wb_list[forward_id].input_occupy_by[this_robot.carry_id] = i;
@@ -207,10 +227,10 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        // if (frame_id < 300 && frame_id >100) {
-        //     robot_list[3].forward_id = 42;
-        //     robot_list[3].action = buy;
-        // }
+        if (frame_id < 300 && frame_id >120 && map_type == 1) {
+            robot_list[3].forward_id = 42;
+            robot_list[3].action = buy;
+        }
         for (int i = 0; i < 4; ++i)
         {
             auto &this_robot = robot_list[i];
@@ -252,6 +272,14 @@ int main(int argc, char *argv[])
                         printf("sell %d\n", this_robot.id);
                         wb_list[this_robot.forward_id].input_occupy_by[this_robot.carry_id] = -1;
                         wb_list[this_robot.forward_id].input_frame = frame_id;
+                        // 统计4、5、6号工作台吃进去的1、2、3号工件数量
+                        auto &forward_wb = wb_list[this_robot.forward_id];
+                        if (forward_wb.type == 4 || forward_wb.type == 5 || wb_list[this_robot.forward_id].type == 6) {
+                            if (!wb_list[this_robot.forward_id].get_input_box_item(this_robot.carry_id)) {
+                                eat_product[forward_wb.type][this_robot.carry_id]++;
+                            }
+                        }
+                        
                     }
                     // for(auto &urgent_task: urgent_list) {
                     //     for(int k = 0; k < urg)
