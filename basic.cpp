@@ -107,3 +107,8 @@ double Vec::angle_diff(Vec b)
         angle_diff += 2 * PI;
     return angle_diff;
 }
+// 计算平面两个矢量的叉乘, oa X ob, 返回 z 轴方向的矢量
+double Vec::cross_product(Vec b)
+{
+    return this->x*b.y-this->y*b.x;
+}
