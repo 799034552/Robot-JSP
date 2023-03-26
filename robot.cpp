@@ -9,7 +9,6 @@ double power_k2 = 15;
 double power_p0 = 5;
 
 vector<int> Avoid_Collision_Direction(4); // 存储4个机器人避让碰撞旋转的方向
-
 /// @brief 计算机器人离哪面墙最近
 /// @param pos 机器人坐标
 /// @param face 机器人朝向
@@ -108,8 +107,8 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
     static double k1 = 1.8;   //  前进速度参数，用转弯半径控制速度
     static double k2 = 2;     //  前进速度参数，用距离工作台的距离控制速度
     static double k3 = 1;     //  前进速度参数,用离墙的距离控制速度
-    static double ksp = 2;    //  势力场控制速度p参数
-    static double ksp2 = 1;   //  目标工作台离墙很近时势力场控制速度p参数
+    static double ksp = 20;   //  势力场控制速度p参数
+    static double ksp2 = 8;   //  目标工作台离墙很近时势力场控制速度p参数
     static double ksd = 0.04; //  势力场控制速度d参数
 
     static double rotate_radius = 2.18;          // 最大转弯半径
@@ -250,6 +249,13 @@ std::pair<double, double> cal_repulsion(std::pair<double, double> current_pos, s
 
     double distance = cal_distance(current_pos, obstacle_pos);
     double CT_distance = cal_distance(current_pos, obstacle_pos);
+    // if (frame_id > 300 && frame_id < 350)
+    // {
+    //     cerr << frame_id << ",   " << f1.first << ", " << f1.second << endl;
+    //     cerr << "current_pos: " << Pos(current_pos) << "  obstacle_pos: " << Pos(obstacle_pos) << endl;
+    //     cerr << "distance: " << distance << " p0: " << p0 << " " << k * (1 / distance - 1 / p0) << endl;
+    //     cerr << "------------------------>" << endl;
+    // }
     if (distance > p0)
         return {0, 0};
 
@@ -271,16 +277,22 @@ std::pair<double, double> cal_repulsion(std::pair<double, double> current_pos, s
 std::pair<double, double> Robot::power_field()
 {
     Avoid_Collision_Direction[this->id] = 0;
-    static double k1 = 4;  // 引力场参数
-    static double k2 = 10; // 斥力场参数
-    static double p0 = 6;  // 斥力场产生作用距离
+    static double k1 = 40;     // 引力场参数
+    static double k2 = 0.05;     // 斥力场参数
+    static double p0 = 5.0 / 50; // 斥力场产生作用距离
     // static double k1 = power_k1;
     // static double k2 = power_k2;
     // static double p0 = power_p0;
     static double wk = 40;                                                // 墙壁斥力场scale
-    static double wp = 0.7;                                               // 墙壁斥力场产生作用距离
+    static double wp = 0.7 / 50;                                          // 墙壁斥力场产生作用距离
     std::pair<double, double> target_pos = wb_list[this->forward_id].pos; // 目标位置
     std::pair<double, double> current_pos = this->pos;                    // 当前位置
+
+    // 归一化距离
+    target_pos.first /= 50;
+    target_pos.second /= 50;
+    current_pos.first /= 50;
+    current_pos.second /= 50;
 
     vector<std::pair<double, double>> force;   // 储存所有的力矢量
     std::pair<double, double> net_force(0, 0); // 合力
@@ -297,8 +309,8 @@ std::pair<double, double> Robot::power_field()
             continue;
         else
             temp_robot_id_list.push_back(i);
-
-        std::pair<double, double> repulsion = cal_repulsion(current_pos, robot_list[i].pos, target_pos, k2, p0);
+        std::pair<double, double> temp_pos(robot_list[i].pos.first / 50.0, robot_list[i].pos.second / 50.0);
+        std::pair<double, double> repulsion = cal_repulsion(current_pos, temp_pos, target_pos, k2, p0);
         // 相同目的地，id大的机器人避让id小的
         if (this->forward_id == robot_list[i].forward_id && this->id < robot_list[i].id)
         {
@@ -310,9 +322,9 @@ std::pair<double, double> Robot::power_field()
     }
     // 计算墙壁斥力
     force.push_back(cal_repulsion(current_pos, {current_pos.first, 0}, target_pos, wk, wp));
-    force.push_back(cal_repulsion(current_pos, {current_pos.first, 50}, target_pos, wk, wp));
+    force.push_back(cal_repulsion(current_pos, {current_pos.first, 1}, target_pos, wk, wp));
     force.push_back(cal_repulsion(current_pos, {0, current_pos.second}, target_pos, wk, wp));
-    force.push_back(cal_repulsion(current_pos, {50, current_pos.second}, target_pos, wk, wp));
+    force.push_back(cal_repulsion(current_pos, {1, current_pos.second}, target_pos, wk, wp));
     // 计算合力
     for (int i = 0; i < force.size(); ++i)
     {
@@ -324,7 +336,7 @@ std::pair<double, double> Robot::power_field()
     for (int i = 1; i < 4; ++i)
     {
         double angle1 = atan2(force[i].second, force[i].first);
-        double angle2 = atan2(net_force.second, net_force.first);
+        double angle2 = atan2(force[0].second, force[0].first);
         double angle_sum = abs(angle1) + abs(angle2);
         // 检测到会迎面相撞
         if (angle_sum >= PI / 180 * 160 && angle_sum <= PI / 180 * 200)
@@ -344,25 +356,15 @@ std::pair<double, double> Robot::power_field()
         }
     }
     if (same_direction)
-        net_force = rotate_vector(net_force, same_direction * PI / 5);
+        net_force = rotate_vector(net_force, same_direction * 3* PI / 5);
 
-    if ((this->id == 1 || this->id == 3) && frame_id > 2740 && frame_id < 2780)
+    if ((this->id == 1||this->id == 3) && frame_id > 310 && frame_id < 350)
     {
         // cerr << frame_id << " " << this->id << ", " << same_direction << endl;
-        // cerr << Vec(this->face) << endl;
-        // if (this->id == 1)
-        // {
-        //     cerr << Vec(this->pos, robot_list[3].pos) << endl;
-        //     cerr << "cross product: " << Vec(this->face).cross_product(Vec(this->pos, robot_list[3].pos)) << endl;
-        // }
-        // else
-        // {
-        //     cerr << Vec(this->pos, robot_list[1].pos) << endl;
-        //     cerr << "cross product: " << Vec(this->face).cross_product(Vec(this->pos, robot_list[1].pos)) << endl;
-        // }
+        // cerr << "pos:" << Pos(this->pos) << endl;
+        // cerr << "vec: "<<Vec(this->face)<<" angle: "<<this->face << endl;
 
-        
-        // for (int i = 0; i < force.size(); ++i)
+        // for (int i = 0; i < 4; ++i)
         // {
         //     cerr << i << " " << force[i].first << ", " << force[i].second << ", " << length(force[i]) << " angle: " << atan2(force[i].second, force[i].first) << endl;
         // }
