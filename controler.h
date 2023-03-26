@@ -22,6 +22,7 @@ class Workbench {
     std::pair<double,double> pos; // 位置
     int left_time; //剩余生产时间
     int input_box;
+    int last_input_box;
     int output_box;
     int out_occupy_by_second = -1;
     int input_frame = -1;
@@ -74,6 +75,7 @@ extern unordered_map<int, vector<int>> favourite_map;
 extern bool debug;
 extern vector<Urgent_task*> urgent_list;
 extern int map_type;
+extern unordered_map<int, int> wb_product_count;
 
 
 void cal_map_type();
