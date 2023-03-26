@@ -298,51 +298,6 @@ void create_urgent() {
     }
 }
 
-double add_distance(int wb_i) {
-    // if (map_type == 1) {
-    //     return 
-    // }
-    // return 0;
-    auto &wb = wb_list[wb_i];
-    double left_time_cost = 0;
-    if (!wb.output_box && wb.left_time>= 0) {
-        left_time_cost = wb.left_time / 50.0 * 5.2 + 100;
-    }
-    return left_time_cost;
-    double end_cost = 0;
-    auto x = frame_id;
-    // switch (wb.type)
-    // {
-    // case 1:
-    // case 2:
-    // case 3:
-    //     if (frame_id > 9000) {
-    //         // http://tools.jb51.net/jisuanqi/create_fun
-    //         // 7500, 2
-    //         // 7800, 8
-    //         // 8000, 12
-    //         // 8500, 20
-    //         // 8700, 40
-    //         // 9000, 70
-    //         end_cost =  -2.2504409233607092e-13*x*x*x*x*x+9.235449761589254e-9*x*x*x*x-0.00015139988756175988*x*x*x+1.2393479242755483*x*x-5066.0809834156535*x+8272977.739510031;
-    //     }
-    //     break;
-    // case 4:
-    // case 5:
-    // case 6:
-    //     if (frame_id > 7500) {
-    //         // 7500, 0
-    //         // 8000, 5
-    //         // 8500, 15
-    //         // 9000, 30
-    //         end_cost =  -3.6271869860450264e-22*x*x*x+0.000010000000000008898*x*x-0.1450000000000725*x+525.0000000001965;
-    //     }
-    //     break;
-    // }
-    return left_time_cost + end_cost;
-    return 0;
-}
-
 shared_ptr<WorldStatus> cal_next_statue(const shared_ptr<WorldStatus> &cur_status, int dt) {
     shared_ptr<WorldStatus> next_status = cur_status->duplicate();
     next_status->frame_id = cur_status->frame_id + dt;
@@ -533,6 +488,52 @@ void true_world_choose(shared_ptr<WorldStatus> cur_status, vector<int> &no_targe
 
 }
 
+//拿东西的
+double add_distance(int wb_i) {
+    // if (map_type == 1) {
+    //     return 
+    // }
+    // return 0;
+    auto &wb = wb_list[wb_i];
+    double left_time_cost = 0;
+    if (!wb.output_box && wb.left_time>= 0) {
+        left_time_cost = wb.left_time / 50.0 * 5.2 + 100;
+    }
+    return left_time_cost;
+    double end_cost = 0;
+    auto x = frame_id;
+    // switch (wb.type)
+    // {
+    // case 1:
+    // case 2:
+    // case 3:
+    //     if (frame_id > 9000) {
+    //         // http://tools.jb51.net/jisuanqi/create_fun
+    //         // 7500, 2
+    //         // 7800, 8
+    //         // 8000, 12
+    //         // 8500, 20
+    //         // 8700, 40
+    //         // 9000, 70
+    //         end_cost =  -2.2504409233607092e-13*x*x*x*x*x+9.235449761589254e-9*x*x*x*x-0.00015139988756175988*x*x*x+1.2393479242755483*x*x-5066.0809834156535*x+8272977.739510031;
+    //     }
+    //     break;
+    // case 4:
+    // case 5:
+    // case 6:
+    //     if (frame_id > 7500) {
+    //         // 7500, 0
+    //         // 8000, 5
+    //         // 8500, 15
+    //         // 9000, 30
+    //         end_cost =  -3.6271869860450264e-22*x*x*x+0.000010000000000008898*x*x-0.1450000000000725*x+525.0000000001965;
+    //     }
+    //     break;
+    // }
+    return left_time_cost + end_cost;
+    return 0;
+}
+
 // 放东西的
 double Workbench::reduce_distance() {
     double avg_c = (wb_product_count[4] + wb_product_count[5] + wb_product_count[6]) / 3.0;
@@ -560,6 +561,9 @@ double Workbench::reduce_distance() {
 
                 // return -20;
             }
+        }
+        if (map_type == 3) {
+            return 10;
         }
         break;
     default:
