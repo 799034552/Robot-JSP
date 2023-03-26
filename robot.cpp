@@ -133,7 +133,7 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
 
     std::pair<double, double> forward_direction(cos(this->face), sin(this->face));
     double traction = (forward_direction.first * net_force.first + forward_direction.second * net_force.second); // 前进方向的力
-    if ((map_type == 1) && distance_pos_wall(wb_list[this->forward_id].pos) < 1.5 &&
+    if (distance_pos_wall(wb_list[this->forward_id].pos) < 1.5 &&
         Pos(wb_list[this->forward_id].pos).distance(this->pos) < 5)
         forward_speed = ksp2 * traction + ksd * (length(this->linear_speed) - this->speed_pid.last_speed);
     else
@@ -141,7 +141,7 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
 
     double RT_distance = Pos(wb_list[this->forward_id].pos).distance(this->pos);
     double face_target_angel_diff = abs(Vec(this->face).angle_diff(Vec(Pos(this->pos), Pos(wb_list[this->forward_id].pos))));
-    if (RT_distance < 2.1 && face_target_angel_diff > rotate_angle_threshold)
+    if (RT_distance < 2 && face_target_angel_diff > rotate_angle_threshold)
     {
         forward_speed = -k1 * abs(face_target_angel_diff) + k2 * RT_distance;
         forward_speed = max(1.5, forward_speed);
@@ -361,7 +361,7 @@ std::pair<double, double> Robot::power_field()
         //     cerr << "cross product: " << Vec(this->face).cross_product(Vec(this->pos, robot_list[1].pos)) << endl;
         // }
 
-
+        
         // for (int i = 0; i < force.size(); ++i)
         // {
         //     cerr << i << " " << force[i].first << ", " << force[i].second << ", " << length(force[i]) << " angle: " << atan2(force[i].second, force[i].first) << endl;
