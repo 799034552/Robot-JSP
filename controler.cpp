@@ -12,6 +12,13 @@ bool debug = false;
 vector<vector<int>> type_to_wb(10, vector<int>());
 long frame_id;
 int money;
+// 4、5、6号工作台吃到的数量
+unordered_map<int, vector<int>> eat_product {
+    {4, vector<int>(10,0)},
+    {5, vector<int>(10,0)},
+    {6, vector<int>(10,0)},
+    
+};
 // 工件正在生产或者已经生成的数量
 unordered_map<int, int> wb_product_count {
     {1, 0},
@@ -490,16 +497,18 @@ void true_world_choose(shared_ptr<WorldStatus> cur_status, vector<int> &no_targe
 
 //拿东西的
 double add_distance(int wb_i) {
-    // if (map_type == 1) {
-    //     return 
-    // }
+
     // return 0;
     auto &wb = wb_list[wb_i];
     double left_time_cost = 0;
     if (!wb.output_box && wb.left_time>= 0) {
         left_time_cost = wb.left_time / 50.0 * 5.2 + 100;
     }
-    return left_time_cost;
+    // 对于图3的1号增加距离
+    // if (map_type == 3 && wb.type == 1) {
+    //     return left_time_cost;
+    // }
+    // return left_time_cost;
     double end_cost = 0;
     auto x = frame_id;
     // switch (wb.type)
@@ -507,7 +516,7 @@ double add_distance(int wb_i) {
     // case 1:
     // case 2:
     // case 3:
-    //     if (frame_id > 9000) {
+    //     if (frame_id > 8000) {
     //         // http://tools.jb51.net/jisuanqi/create_fun
     //         // 7500, 2
     //         // 7800, 8
@@ -521,7 +530,7 @@ double add_distance(int wb_i) {
     // case 4:
     // case 5:
     // case 6:
-    //     if (frame_id > 7500) {
+    //     if (frame_id > 8000) {
     //         // 7500, 0
     //         // 8000, 5
     //         // 8500, 15
@@ -535,7 +544,7 @@ double add_distance(int wb_i) {
 }
 
 // 放东西的
-double Workbench::reduce_distance() {
+double Workbench::reduce_distance(const int &carry_id) {
     double avg_c = (wb_product_count[4] + wb_product_count[5] + wb_product_count[6]) / 3.0;
     switch (type)
     {
@@ -546,7 +555,6 @@ double Workbench::reduce_distance() {
         return 0;
     case 9:
         return -30;
-        return 0;
         break;
     case 4:
     case 5:
@@ -562,9 +570,42 @@ double Workbench::reduce_distance() {
                 // return -20;
             }
         }
-        if (map_type == 3) {
-            return 10;
-        }
+        // if (map_type == 3) {
+        //     return 10;
+        // }
+        // if (map_type == 1) {
+        //     int sum = 0;
+        //     // for(auto &wb_i: wb_can_put[carry_id]) {
+        //     //     auto &wb = wb_list[wb_i];
+        //     //     if (wb.type == 9) continue;
+        //     //     sum += eat_product[wb.type][carry_id];
+        //     // }
+        //     // if (eat_product[type][carry_id] > sum / 2.0 + 3) {
+        //     //     return -10;
+        //     // }
+        //     // wb_product_count[4] = wb_product_count[5] = wb_product_count[6] = 0;
+        //     // for(auto & wb_i: type_to_wb[7]) {
+        //     //     if (wb_list[wb_i].get_input_box_item(4))
+        //     //         wb_product_count[4]++;
+        //     //     if (wb_list[wb_i].get_input_box_item(5))
+        //     //         wb_product_count[5]++;
+        //     //     if (wb_list[wb_i].get_input_box_item(6))
+        //     //         wb_product_count[6]++;
+        //     // }
+        //     // avg_c = (wb_product_count[4] + wb_product_count[5] + wb_product_count[6]) / 3.0;
+        //     // if (wb_product_count[type] > avg_c) {
+        //     //     return -20;
+        //     //     // cerr<<wb_product_count[4]<<endl
+        //     //     // <<wb_product_count[5]<<endl
+        //     //     // <<wb_product_count[6]<<endl;
+        //     //     // // exit(0);
+
+        //     //     // return -20;
+        //     // }
+        // }
+        // if (map_type == 3) {
+        //     return 10;
+        // }
         break;
     default:
         break;
@@ -594,11 +635,14 @@ double Workbench::reduce_distance() {
         // if (wb_can_put[type].size() - count == 1) {
         //     return (frame_id - input_frame) / 50.0 * 1;
         // }
+        // if (type == 6)
+        //     return 20;
+        return 10;
         break;
     case 4:
         if (type == 4) {
             // return 1000;
-            return max((frame_id - input_frame) / 50.0 * 4, 20.0);
+            return max((frame_id - input_frame) / 50.0 * 4, 25.0);
         }
         if (wb_can_put[type].size() - count == 1) {
             // return (frame_id - input_frame) / 50.0 * 0.9;
@@ -627,4 +671,14 @@ void cal_map_type() {
         map_type = 3;
     if (wb_list.size() == 18)
         map_type = 4;
+}
+
+int cal_input_total(int wb_id) {
+    auto &wb = wb_list[wb_id];
+    int count = 0;
+    for(auto &t: wb_can_put[wb.type]) {
+        if (wb.get_input_box_item(t)) 
+            count++;
+    }
+    return count;
 }

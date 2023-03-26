@@ -33,7 +33,7 @@ class Workbench {
 
     };
     bool get_input_box_item(int n); // 获取对应的输入格子是否被占用
-    double reduce_distance();
+    double reduce_distance(const int &carry_id);
 };
 
 class WorldStatus {
@@ -76,6 +76,7 @@ extern bool debug;
 extern vector<Urgent_task*> urgent_list;
 extern int map_type;
 extern unordered_map<int, int> wb_product_count;
+extern unordered_map<int, vector<int>> eat_product;
 
 
 void cal_map_type();
@@ -111,5 +112,6 @@ shared_ptr<DecisionTreeNode> build_decision_tree(shared_ptr<DecisionTreeNode> &r
 
 void world_choose(shared_ptr<WorldStatus> cur_status, vector<int> &no_target_robot, vector<vector<int>> &can_choose, shared_ptr<DecisionTreeNode> &root);
 void true_world_choose(shared_ptr<WorldStatus> cur_status, vector<int> &no_target_robot, vector<vector<int>> &can_choose, vector<int> &choose, shared_ptr<DecisionTreeNode> &root);
+int cal_input_total(int wb_id);
 #endif
 
