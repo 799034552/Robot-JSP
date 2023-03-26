@@ -210,7 +210,7 @@ bool can_somebody_put(int pr_type, pair<double, double> robot_pos, pair<double, 
                 // 计算需要消耗的时间
                 auto d1 = cal_distance(robot_pos, wb_pos);
                 auto d2 = cal_distance(wb_pos, wb_list[wb_i].pos);
-                auto total_frame = (d1 + d2) / 5.2 * 50;
+                auto total_frame = (d1 + d2) / 4.83 * 50;
                 if (total_frame < 9000 - frame_id)
                     return true;
             }
