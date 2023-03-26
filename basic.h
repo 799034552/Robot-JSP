@@ -3,6 +3,8 @@
 #include <cmath>
 #include <utility>
 #include <iostream>
+#include <fstream>
+#define PI 3.14159265359
 
 class Pos
 {
@@ -46,6 +48,7 @@ public:
 
     Vec(){};
     Vec(double x, double y);
+    Vec(std::pair<double, double> v);
     Vec(double angle); // 生成单位向量
     Vec(Pos start, Pos end);
     ~Vec();
@@ -77,6 +80,8 @@ public:
     double length();
     Vec unit_vector();
     double angle();
+    double angle_diff(Vec b);   // 计算向量角度差, this->angle - b.angle
 };
 
+extern std::ofstream fout;
 #endif

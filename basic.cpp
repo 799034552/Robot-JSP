@@ -1,4 +1,7 @@
 #include "basic.h"
+
+std::ofstream fout;
+
 Pos::Pos(double x, double y)
 {
     this->x = x;
@@ -20,7 +23,8 @@ Pos operator*(double scale, const Pos &A)
 {
     return {A.x * scale, A.y * scale};
 }
-Pos operator/(const Pos &A, double scale){
+Pos operator/(const Pos &A, double scale)
+{
     return {A.x / scale, A.y / scale};
 }
 Pos operator/(double scale, const Pos &A)
@@ -39,10 +43,15 @@ Vec::Vec(double angle)
     this->y = sin(angle);
 }
 /// @brief 生成 start 指向 end 的矢量
-Vec::Vec(Pos start,Pos end)
+Vec::Vec(Pos start, Pos end)
 {
     this->x = end.x - start.x;
     this->y = end.y - start.y;
+}
+Vec::Vec(std::pair<double, double> v)
+{
+    this->x = v.first;
+    this->y = v.second;
 }
 Vec::~Vec()
 {
@@ -81,5 +90,15 @@ Vec Vec::unit_vector()
 
 double Vec::angle()
 {
-    return atan2(this->y,this->x);
+    return atan2(this->y, this->x);
+}
+
+double Vec::angle_diff(Vec b)
+{
+    double angle_diff = this->angle() - b.angle();
+    if (angle_diff > PI)
+        angle_diff -= 2 * PI;
+    else if (angle_diff < -PI)
+        angle_diff += 2 * PI;
+    return angle_diff;
 }
