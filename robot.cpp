@@ -131,7 +131,7 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
 
     std::pair<double, double> forward_direction(cos(this->face), sin(this->face));
     double traction = (forward_direction.first * net_force.first + forward_direction.second * net_force.second); // 前进方向的力
-    if (distance_pos_wall(wb_list[this->forward_id].pos) < 2 && Pos(wb_list[this->forward_id].pos).distance(this->pos)<10)
+    if ((map_type==1||map_type==4)&&distance_pos_wall(wb_list[this->forward_id].pos) < 1.5 && Pos(wb_list[this->forward_id].pos).distance(this->pos)<10)
         forward_speed = ksp2 * traction + ksd * (length(this->linear_speed) - this->speed_pid.last_speed);
     else
         forward_speed = ksp * traction + ksd * (length(this->linear_speed) - this->speed_pid.last_speed);
