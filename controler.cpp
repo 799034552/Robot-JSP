@@ -508,7 +508,6 @@ double add_distance(int wb_i) {
     // if (map_type == 4 && wb.type == 1) {
     //     return left_time_cost - 20;
     // }
-    // return left_time_cost;
     double end_cost = 0;
     auto x = frame_id;
     // switch (wb.type)

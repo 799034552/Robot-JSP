@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
                                 break;
                         }
                         sort(type_seven.begin(), type_seven.begin()+m, [](pair<pair<int,int>, int> a, pair<pair<int,int>, int> b) {return a.first.second < b.first.second;});
-                        if (map_type == 1 && type_seven.size() > 0) {
+                        if ((map_type == 1|| map_type ==2) && type_seven.size() > 0) {
                             forward_id = type_seven[0].first.first;
                         }
                         // for (auto wb_i : favourite_map[wb_list[forward_id].type])
