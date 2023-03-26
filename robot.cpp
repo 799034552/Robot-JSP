@@ -139,7 +139,7 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
 
     double RT_distance = Pos(wb_list[this->forward_id].pos).distance(this->pos);
     double face_target_angel_diff = abs(Vec(this->face).angle_diff(Vec(Pos(this->pos), Pos(wb_list[this->forward_id].pos))));
-    if (RT_distance < 2 && face_target_angel_diff > rotate_angle_threshold)
+    if ( map_type != 4 && (RT_distance < 2 && face_target_angel_diff > rotate_angle_threshold))
     {
         forward_speed = -k1 * abs(face_target_angel_diff) + k2 * RT_distance;
         forward_speed = max(1.5, forward_speed);
