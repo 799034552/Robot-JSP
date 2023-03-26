@@ -504,10 +504,10 @@ double add_distance(int wb_i) {
     if (!wb.output_box && wb.left_time>= 0) {
         left_time_cost = wb.left_time / 50.0 * 5.2 + 100;
     }
-    // 对于图3的1号增加距离
-    // if (map_type == 3 && wb.type == 1) {
-    //     return left_time_cost;
-    // }
+    // 对于4号图减少1的距离
+    if (map_type == 4 && wb.type == 1) {
+        return left_time_cost - 20;
+    }
     // return left_time_cost;
     double end_cost = 0;
     auto x = frame_id;
