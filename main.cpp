@@ -207,6 +207,10 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        // if (frame_id < 300 && frame_id >100) {
+        //     robot_list[3].forward_id = 42;
+        //     robot_list[3].action = buy;
+        // }
         for (int i = 0; i < 4; ++i)
         {
             auto &this_robot = robot_list[i];

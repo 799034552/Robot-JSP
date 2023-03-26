@@ -533,6 +533,7 @@ void true_world_choose(shared_ptr<WorldStatus> cur_status, vector<int> &no_targe
 
 }
 
+// 放东西的
 double Workbench::reduce_distance() {
     double avg_c = (wb_product_count[4] + wb_product_count[5] + wb_product_count[6]) / 3.0;
     switch (type)
@@ -541,14 +542,17 @@ double Workbench::reduce_distance() {
     case 2:
     case 3:
     case 8:
-    case 9:
         return 0;
+    case 9:
+        return -30;
+        return 0;
+        break;
     case 4:
     case 5:
     case 6:
         if (map_type == 1) {
             if (wb_product_count[type] > avg_c) {
-                return -10;
+                // return -10;
                 // cerr<<wb_product_count[4]<<endl
                 // <<wb_product_count[5]<<endl
                 // <<wb_product_count[6]<<endl;
