@@ -505,10 +505,9 @@ double add_distance(int wb_i) {
         left_time_cost = wb.left_time / 50.0 * 5.2 + 100;
     }
     // 对于4号图减少1的距离
-    if (map_type == 4 && wb.type == 1) {
-        return left_time_cost - 20;
-    }
-    // return left_time_cost;
+    // if (map_type == 4 && wb.type == 1) {
+    //     return left_time_cost - 20;
+    // }
     double end_cost = 0;
     auto x = frame_id;
     // switch (wb.type)

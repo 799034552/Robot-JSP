@@ -83,7 +83,6 @@ public:
     Vec unit_vector();
     double angle();
     double angle_diff(Vec b);   // 计算向量角度差, this->angle - b.angle
-    double cross_product(Vec b); // 计算平面两个矢量的叉乘, oa X ob, 返回 z 轴方向的矢量
 };
 
 extern std::ofstream fout;
