@@ -73,6 +73,10 @@ int main(int argc, char *argv[])
                         // cerr<< frame_id<<endl;
                         if (frame_id < 9000)
                         {
+                            // // 二次占用trick
+                            // if (wb_list[j].type == 1 || wb_list[j].type == 2 || wb_list[j].type == 3) {
+                            //     if(wb_list[j].output_occupy_by != -1 && )
+                            // }
                             if (wb_list[j].output_occupy_by != -1 || (wb_list[j].left_time == -1 && !wb_list[j].output_box))
                                 continue; // 被占用或者没有在生产就下一个
                         }
@@ -148,7 +152,8 @@ int main(int argc, char *argv[])
                             if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id))
                                 continue; // 被占用或者输入格满就下一个
                             // 出现同类型的没有在生产的7号工作台，并且工作台与当前目标距离差值小
-                            if (wb.left_time < 300 && (wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6) > 1) && cal_distance(wb_list[wb.id].pos, wb_list[forward_id].pos) < 10)
+                            // if (wb.left_time < 300 && (wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6) > 1) && cal_distance(wb_list[wb.id].pos, wb_list[forward_id].pos) < 10)
+                            if (wb.left_time < 300 && (map_type == 1 || map_type == 2))
                             {
                                 forward_id = wb.id;
                             }
@@ -201,14 +206,6 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        // if (frame_id == 49) 
-        //     cerr<<frame_id<<" "<<wb_list[type_to_wb[1][0]].left_time<<endl;
-        // if (frame_id == 50) 
-        //     cerr<<frame_id<<" "<<wb_list[type_to_wb[1][0]].left_time<<endl;
-        // if (frame_id == 51) 
-        //     cerr<<frame_id<<" "<<wb_list[type_to_wb[1][0]].left_time<<endl;
-        // if (frame_id == 52) 
-        //     exit(0);
         for (int i = 0; i < 4; ++i)
         {
             auto &this_robot = robot_list[i];
