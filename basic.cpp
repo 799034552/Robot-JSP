@@ -32,6 +32,11 @@ Pos operator/(double scale, const Pos &A)
     return {A.x / scale, A.y / scale};
 }
 
+double Pos::distance(Pos b)
+{
+    return sqrt((this->x - b.x) * (this->x - b.x) + (this->y - b.y) * (this->y - b.y));
+}
+
 Vec::Vec(double x, double y)
 {
     this->x = x;

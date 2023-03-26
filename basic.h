@@ -36,6 +36,8 @@ public:
         p.y = this->y + b.y;
         return p;
     }
+
+    double distance(Pos b);
 };
 
 class Vec
