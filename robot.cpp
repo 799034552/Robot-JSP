@@ -107,7 +107,7 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
     static double k2 = 2;     //  前进速度参数，用距离工作台的距离控制速度
     static double k3 = 1;     //  前进速度参数,用离墙的距离控制速度
     static double ksp = 2;    //  势力场控制速度p参数
-    static double ksp2 = 1;    //  目标工作台离墙很近时势力场控制速度p参数
+    static double ksp2 = 1;   //  目标工作台离墙很近时势力场控制速度p参数
     static double ksd = 0.04; //  势力场控制速度d参数
 
     static double rotate_radius = 2.18;          // 最大转弯半径
@@ -131,10 +131,20 @@ std::pair<double, double> Robot::Robot_control(double distance, double angle)
 
     std::pair<double, double> forward_direction(cos(this->face), sin(this->face));
     double traction = (forward_direction.first * net_force.first + forward_direction.second * net_force.second); // 前进方向的力
-    if ((map_type==1||map_type==4)&&distance_pos_wall(wb_list[this->forward_id].pos) < 1.5 && Pos(wb_list[this->forward_id].pos).distance(this->pos)<10)
+    if ((map_type == 1) && distance_pos_wall(wb_list[this->forward_id].pos) < 1.5 &&
+        Pos(wb_list[this->forward_id].pos).distance(this->pos) < 5)
         forward_speed = ksp2 * traction + ksd * (length(this->linear_speed) - this->speed_pid.last_speed);
     else
         forward_speed = ksp * traction + ksd * (length(this->linear_speed) - this->speed_pid.last_speed);
+
+    double RT_distance = Pos(wb_list[this->forward_id].pos).distance(this->pos);
+    double face_target_angel_diff = abs(Vec(this->face).angle_diff(Vec(Pos(this->pos), Pos(wb_list[this->forward_id].pos))));
+    if (RT_distance < 2 && face_target_angel_diff > rotate_angle_threshold)
+    {
+        forward_speed = -k1 * abs(face_target_angel_diff) + k2 * RT_distance;
+        forward_speed = max(1.5, forward_speed);
+    }
+
     this->speed_pid.last_speed = length(this->linear_speed);
 
     // 计算转弯的圆心坐标
