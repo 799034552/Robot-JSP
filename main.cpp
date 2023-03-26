@@ -147,31 +147,39 @@ int main(int argc, char *argv[])
                     if (forward_id != -1)
                     {
                         vector<pair<pair<int,int>, int>> type_seven;
-
                         // 偏好选择
                         int m = 0;
-                         for (auto wb_i : favourite_map[wb_list[forward_id].type])
+                        for (auto wb_i : favourite_map[wb_list[forward_id].type])
                         {
                             auto &wb = wb_list[wb_i];
-                            if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id))
+                            if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id ) || wb.left_time < 300)
                                 continue; // 被占用或者输入格满就下一个
                             pair<int,int> tmp {wb_i,m};
                             type_seven.emplace_back(tmp,cal_input_total(wb_i));
                             ++m;
                         }
-                        for (auto wb_i : favourite_map[wb_list[forward_id].type])
-                        {
-                            auto &wb = wb_list[wb_i];
-                            if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id))
-                                continue; // 被占用或者输入格满就下一个
-                            // 出现同类型的没有在生产的7号工作台，并且工作台与当前目标距离差值小
-                            // if (wb.left_time < 300 && (wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6) > 1) && cal_distance(wb_list[wb.id].pos, wb_list[forward_id].pos) < 10)
-                            if (wb.left_time < 300 && (map_type == 1))
-                            {
-                                forward_id = wb.id;
-                            }
-                            break;
+                        sort(type_seven.begin(), type_seven.end(), [](pair<pair<int,int>, int> a, pair<pair<int,int>, int> b) {return a.second > b.second;});
+                        for(m = 1; m < type_seven.size(); ++m) {
+                            if (type_seven[m].second < type_seven[m - 1].second)
+                                break;
                         }
+                        sort(type_seven.begin(), type_seven.begin()+m, [](pair<pair<int,int>, int> a, pair<pair<int,int>, int> b) {return a.first.second < b.first.second;});
+                        if (map_type == 1 && type_seven.size() > 0) {
+                            forward_id = type_seven[0].first.first;
+                        }
+                        // for (auto wb_i : favourite_map[wb_list[forward_id].type])
+                        // {
+                        //     auto &wb = wb_list[wb_i];
+                        //     if ((wb.input_occupy_by[this_robot.carry_id] != -1) || wb.get_input_box_item(this_robot.carry_id))
+                        //         continue; // 被占用或者输入格满就下一个
+                        //     // 出现同类型的没有在生产的7号工作台，并且工作台与当前目标距离差值小
+                        //     // if (wb.left_time < 300 && (wb.get_input_box_item(4) + wb.get_input_box_item(5) + wb.get_input_box_item(6) > 1) && cal_distance(wb_list[wb.id].pos, wb_list[forward_id].pos) < 10)
+                        //     if (wb.left_time < 300 && (map_type == 1))
+                        //     {
+                        //         forward_id = wb.id;
+                        //     }
+                        //     break;
+                        // }
                         this_robot.action = sell;
                         this_robot.forward_id = forward_id;
                         wb_list[forward_id].input_occupy_by[this_robot.carry_id] = i;

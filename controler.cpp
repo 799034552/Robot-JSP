@@ -573,36 +573,36 @@ double Workbench::reduce_distance(const int &carry_id) {
         // if (map_type == 3) {
         //     return 10;
         // }
-        // if (map_type == 1) {
-        //     int sum = 0;
-        //     // for(auto &wb_i: wb_can_put[carry_id]) {
-        //     //     auto &wb = wb_list[wb_i];
-        //     //     if (wb.type == 9) continue;
-        //     //     sum += eat_product[wb.type][carry_id];
-        //     // }
-        //     // if (eat_product[type][carry_id] > sum / 2.0 + 3) {
-        //     //     return -10;
-        //     // }
-        //     // wb_product_count[4] = wb_product_count[5] = wb_product_count[6] = 0;
-        //     // for(auto & wb_i: type_to_wb[7]) {
-        //     //     if (wb_list[wb_i].get_input_box_item(4))
-        //     //         wb_product_count[4]++;
-        //     //     if (wb_list[wb_i].get_input_box_item(5))
-        //     //         wb_product_count[5]++;
-        //     //     if (wb_list[wb_i].get_input_box_item(6))
-        //     //         wb_product_count[6]++;
-        //     // }
-        //     // avg_c = (wb_product_count[4] + wb_product_count[5] + wb_product_count[6]) / 3.0;
-        //     // if (wb_product_count[type] > avg_c) {
-        //     //     return -20;
-        //     //     // cerr<<wb_product_count[4]<<endl
-        //     //     // <<wb_product_count[5]<<endl
-        //     //     // <<wb_product_count[6]<<endl;
-        //     //     // // exit(0);
+        if (map_type == 1) {
+            int sum = 0;
+            // for(auto &wb_i: wb_can_put[carry_id]) {
+            //     auto &wb = wb_list[wb_i];
+            //     if (wb.type == 9) continue;
+            //     sum += eat_product[wb.type][carry_id];
+            // }
+            // if (eat_product[type][carry_id] > sum / 2.0 + 3) {
+            //     return -10;
+            // }
+            wb_product_count[4] = wb_product_count[5] = wb_product_count[6] = 0;
+            for(auto & wb_i: type_to_wb[7]) {
+                if (wb_list[wb_i].get_input_box_item(4))
+                    wb_product_count[4]++;
+                if (wb_list[wb_i].get_input_box_item(5))
+                    wb_product_count[5]++;
+                if (wb_list[wb_i].get_input_box_item(6))
+                    wb_product_count[6]++;
+            }
+            avg_c = (wb_product_count[4] + wb_product_count[5] + wb_product_count[6]) / 3.0;
+            if (wb_product_count[type] > avg_c + 1)
+                return -10;
+            //     // cerr<<wb_product_count[4]<<endl
+            //     // <<wb_product_count[5]<<endl
+            //     // <<wb_product_count[6]<<endl;
+            //     // // exit(0);
 
-        //     //     // return -20;
-        //     // }
-        // }
+            //     // return -20;
+            // }
+        }
         // if (map_type == 3) {
         //     return 10;
         // }
