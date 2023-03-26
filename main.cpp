@@ -6,6 +6,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
+    fout.open("output.txt");
     // 用于调参
     if (argc > 1)
     {
@@ -269,5 +270,6 @@ int main(int argc, char *argv[])
         if (frame_id == 9000)
             break;
     }
+    fout.close();
     return 0;
 }
