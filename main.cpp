@@ -227,6 +227,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        // 指定初始位置
         if (frame_id < 300 && frame_id >120 && map_type == 1) {
             robot_list[3].forward_id = 42;
             robot_list[3].action = buy;
@@ -237,9 +238,9 @@ int main(int argc, char *argv[])
             robot_list[3].forward_id = 16;
             robot_list[3].action = buy;
         }
-        // if (frame_id < 850 && frame_id >500 && map_type == 1 && robot_list[3].forward_id == -1) {
-        //     robot_list[3].forward_id = 42;
-        //     robot_list[3].action = buy;
+        // if (map_type == 4 && frame_id < 250) {
+        //     robot_list[2].forward_id = 2;
+        //     robot_list[2].action = buy;
         // }
         for (int i = 0; i < 4; ++i)
         {
@@ -305,8 +306,31 @@ int main(int argc, char *argv[])
                 // cerr<<"wait\n";
                 printf("forward %d %f\n", this_robot.id, 0.0);
                 printf("rotate %d %f\n", this_robot.id, 0.0);
+                // 避免最后挡路
+                if (frame_id > 8600) {
+                    double min_distance = MAX_NUMBER;
+                    double fake_forward_id = -1;
+                    for(auto &wb: wb_list) {
+                        if((wb.type == 1 || wb.type == 2 || wb.type == 3) && wb.output_occupy_by == -1) {
+                            auto t = cal_distance(this_robot.pos, wb.pos);
+                            if (t < min_distance) {
+                                fake_forward_id = wb.id;
+                                min_distance = t;
+                            }
+                        }
+                    }
+                    if (fake_forward_id != -1) {
+                        auto distance = cal_distance(this_robot.pos, wb_list[fake_forward_id].pos);
+                        // 判断机器人旋转方向
+                        auto angle = cal_angle(this_robot.pos, wb_list[fake_forward_id].pos);
+                        this_robot.action = None;
+                        this_robot.forward_id = fake_forward_id;
+                        std::pair<double, double> control = this_robot.Robot_control(distance, angle);
+                        printf("forward %d %f\n", this_robot.id, control.first);
+                        printf("rotate %d %f\n", this_robot.id, control.second);
+                    }
+                }
             }
-
         }
         printf("OK\n");
         if (frame_id == 9000)
