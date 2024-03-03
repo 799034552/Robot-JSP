@@ -13,3 +13,4 @@ cmake --build build
 
 > **vscode联合cmake可以看[这篇](https://blog.csdn.net/qq_30111427/article/details/122862758?spm=1001.2014.3001.5502)**
 
+> **比赛主页** https://competition.huaweicloud.com/codecraft2023
