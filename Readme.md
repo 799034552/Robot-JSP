@@ -3,15 +3,13 @@
 ## 使用方法
 ```shell
 # 编译项目
-cd build
-cmake -G "MinGW Makefiles" ..
-mingw32-make.exe
+cmake -B build -G "MinGW Makefiles"
+cmake --build build
 # 调用程序
-..\Robot.exe -m ..\maps\1.txt main.exe -f
+.\Robot.exe -m .\maps\1.txt .\build\main.exe -f
 ```
 
-# 坑
-* printf的浮点数输出整数居然不行。。。比如printf("forward %d %f\n", this_robot.id, 6);
+
 
 > **vscode联合cmake可以看[这篇](https://blog.csdn.net/qq_30111427/article/details/122862758?spm=1001.2014.3001.5502)**
 
